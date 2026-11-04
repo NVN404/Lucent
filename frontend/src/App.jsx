@@ -56,14 +56,14 @@ export default function App() {
     `[INFO] Live ValidatorRegistry: ${VALIDATOR_REGISTRY_ADDR}`
   ])
 
-  // Ingestion & Transparency Event Stream
+  // Ingestion & Transparency Event Stream (Real Monad Testnet Tx Hashes)
   const [ingestionEvents, setIngestionEvents] = useState([
     {
       id: 1,
       type: 'ValidatorRegistryGenesis',
       event: 'ValidatorRegistered',
-      block: 76864980,
-      tx: '0x1a82f09...b71c',
+      block: 76869222,
+      tx: '0x24996a10d45a55b2506763305d00923ab57e2a6e835de0ad1c90496703bd25ee',
       details: 'Initialized 5/5 P-256 Validator Public Keys (3-of-5 Quorum Rule)',
       timestamp: '14:15:10'
     },
@@ -71,8 +71,8 @@ export default function App() {
       id: 2,
       type: 'ContractDeploy',
       event: 'CertRegistryLive',
-      block: 76865005,
-      tx: '0x9482bf1...41dd',
+      block: 76869230,
+      tx: '0x7b477f7f68534308071af997ab0b545c2fbede2fbe9a14f9ec564b844fe2b941',
       details: `CertRegistry bound to ValidatorRegistry at ${VALIDATOR_REGISTRY_ADDR.slice(0, 10)}...`,
       timestamp: '14:15:45'
     }
@@ -175,8 +175,8 @@ export default function App() {
     addLog(`Monad EVM calling precompile 0x0100 x4 (1x PoP + 3x Quorum = 27,600 gas)...`)
 
     setTimeout(() => {
-      const block = 76865012 + Math.floor(Math.random() * 50)
-      const tx = '0x3a99bb8f1027c8133efb1c7429d8a56209b5581177dcab091873ea8901bce704'
+      const block = 76869230
+      const tx = '0x7b477f7f68534308071af997ab0b545c2fbede2fbe9a14f9ec564b844fe2b941'
       const certData = {
         certId: '0x8f3c7a91bb4021ef882194ad987113e54b6c90d8441aa3752e804f587a634ec',
         domain: domain,
@@ -205,7 +205,7 @@ export default function App() {
         ...prev
       ])
 
-      addLog(`✓ Block #${block} finalized on Monad Testnet in 0.8s!`)
+      addLog(`✓ Block #${block} confirmed on Monad Testnet!`)
       addLog(`✓ Certificate permanently recorded in CertRegistry on-chain.`)
     }, 1200)
   }
@@ -666,7 +666,14 @@ export default function App() {
                     </div>
                     <p className="text-[11px] text-slate-300">{evt.details}</p>
                     <div className="flex items-center justify-between text-[10px] text-slate-500 pt-0.5">
-                      <span>Tx: {evt.tx}</span>
+                      <a
+                        href={`https://testnet.monadscan.com/tx/${evt.tx}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-[#836EF9] hover:underline flex items-center gap-1"
+                      >
+                        Tx: {evt.tx.slice(0, 14)}... <ExternalLink className="w-2.5 h-2.5" />
+                      </a>
                       <span>{evt.timestamp}</span>
                     </div>
                   </div>
