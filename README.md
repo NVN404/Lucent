@@ -1,9 +1,9 @@
-# MonadTrust 🛡️ (Lucent)
+# Lucent
 ### Decentralized Public Key Infrastructure (dPKI) on Monad
 *Eliminating Centralized CA Master Keys using Monad's Native P-256 (`0x0100`) Precompile*
 
 **Monad Blitz Devcon Mumbai Hackathon Project**
-* **Project Name:** MonadTrust (Lucent)
+* **Project Name:** Lucent
 * **Blitz Portal:** [blitz.devnads.com](https://blitz.devnads.com)
 * **GitHub Repository:** [https://github.com/NVN404/Lucent](https://github.com/NVN404/Lucent)
 * **Network:** Monad Testnet (`Chain ID: 10143`)
@@ -35,8 +35,8 @@ Traditional Web PKI concentrates global internet trust in ~150 Certificate Autho
 * Traditional revocation mechanisms (CRLs and OCSP) are broken, slow to propagate, and compromise user privacy.
 * Certificate Transparency (CT) logs are strictly *reactive* (they detect misissuance after the fact), not preventative.
 
-## 💡 The Solution: MonadTrust
-**MonadTrust eliminates the single CA master signing key.**
+## 💡 The Solution: Lucent
+**Lucent eliminates the single CA master signing key.**
 Instead of trusting a single organization's private key, certificate issuance and revocation are governed by an on-chain **3-of-5 independent validator quorum**, cryptographically enforced on Monad using its native secp256r1 (NIST P-256) precompiled contract at `0x0100` (EIP-7951).
 
 ```mermaid
@@ -51,7 +51,7 @@ sequenceDiagram
 
     Note over Owner,Monad: PHASE 1: OWNER ISSUANCE FLOW
     Owner->>Owner: 1. Generates Sovereign P-256 Keypair (Private key stays secret!)
-    Owner->>DNS: 2. Adds TXT record: _monadtrust.<domain> = challenge_hash
+    Owner->>DNS: 2. Adds TXT record: _lucent.<domain> = challenge_hash
     Owner->>Nodes: 3. Requests Quorum Signatures
     Nodes->>DNS: 4. Check TXT record on Google & Cloudflare DNS (Proves ownership!)
     Nodes-->>Owner: 5. 5 Nodes sign off with P-256
@@ -66,7 +66,7 @@ sequenceDiagram
     Visitor->>Server: 12. Sends challenge (Random Nonce + TLS Connection Fingerprint)
     Server-->>Visitor: 13. Signs challenge with P-256 private key
     Note over Visitor: 14. Browser verifies signature against on-chain key!<br/>If an attacker used a fake CA cert, the TLS fingerprint mismatches!
-    Visitor-->>Visitor: 15. 🟢 Green Shield: "MonadTrust Verified: Anti-MITM Guard Active"
+    Visitor-->>Visitor: 15. 🟢 Green Shield: "Lucent Verified: Anti-MITM Guard Active"
 ```
 
 ---
