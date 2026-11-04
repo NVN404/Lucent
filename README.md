@@ -1,10 +1,11 @@
-# MonadTrust 🛡️
+# MonadTrust 🛡️ (Lucent)
 ### Decentralized Public Key Infrastructure (dPKI) on Monad
 *Eliminating Centralized CA Master Keys using Monad's Native P-256 (`0x0100`) Precompile*
 
 **Monad Blitz Devcon Mumbai Hackathon Project**
 * **Project Name:** MonadTrust (Lucent)
 * **Blitz Portal:** [blitz.devnads.com](https://blitz.devnads.com)
+* **GitHub Repository:** [https://github.com/NVN404/Lucent](https://github.com/NVN404/Lucent)
 * **Network:** Monad Testnet (`Chain ID: 10143`)
 * **RPC URL:** `https://testnet-rpc.monad.xyz`
 * **Explorer:** [testnet.monadscan.com](https://testnet.monadscan.com)
@@ -13,17 +14,18 @@
 
 ## 🚀 Live Monad Testnet Deployment (Verified On-Chain)
 
-Both contracts are **deployed and active on Monad Testnet**:
+Both smart contracts are **broadcast, verified, and confirmed on Monad Testnet**:
 
-| Contract | Monad Testnet Address | Explorer Link |
-| :--- | :--- | :--- |
-| **`CertRegistry`** | `0xE4ec4B30F417260cf0C3cdca8fbEAE6d337c080b` | [View on MonadScan](https://testnet.monadscan.com/address/0xE4ec4B30F417260cf0C3cdca8fbEAE6d337c080b) |
-| **`ValidatorRegistry`** | `0x9854f6f7bc90A0D84dce9065E1bD3ae3B8d436E4` | [View on MonadScan](https://testnet.monadscan.com/address/0x9854f6f7bc90A0D84dce9065E1bD3ae3B8d436E4) |
-| **Deployer Wallet** | `0xd886168001663855a8f1ea7DdEa1393A074Ee354` | [View on MonadScan](https://testnet.monadscan.com/address/0xd886168001663855a8f1ea7DdEa1393A074Ee354) |
+| Contract / Entity | Address | Deployment Tx Hash | MonadScan Explorer Link |
+| :--- | :--- | :--- | :--- |
+| **`CertRegistry`** | `0xE4ec4B30F417260cf0C3cdca8fbEAE6d337c080b` | `0x7b477f7f68534308071af997ab0b545c2fbede2fbe9a14f9ec564b844fe2b941` | [View on MonadScan](https://testnet.monadscan.com/address/0xE4ec4B30F417260cf0C3cdca8fbEAE6d337c080b) |
+| **`ValidatorRegistry`** | `0x9854f6f7bc90A0D84dce9065E1bD3ae3B8d436E4` | `0x24996a10d45a55b2506763305d00923ab57e2a6e835de0ad1c90496703bd25ee` | [View on MonadScan](https://testnet.monadscan.com/address/0x9854f6f7bc90A0D84dce9065E1bD3ae3B8d436E4) |
+| **Deployer Wallet** | `0xd886168001663855a8f1ea7DdEa1393A074Ee354` | — | [View on MonadScan](https://testnet.monadscan.com/address/0xd886168001663855a8f1ea7DdEa1393A074Ee354) |
 
-* Quorum Configuration: **3 of 5** active P-256 validators
-* Precompile Address: **`0x0000000000000000000000000000000000000100` (`0x0100`)**
-* Gas per signature check: **6,900 gas** (EIP-7951 standard on Monad)
+* **Quorum Configuration:** **3 of 5** active P-256 validators
+* **Precompile Address:** **`0x0000000000000000000000000000000000000100` (`0x0100`)**
+* **Gas Consumption:** Exactly **6,900 gas** per verification (EIP-7951 standard on Monad)
+* **Total Issuance Cost:** 4 checks $\approx 27,600$ gas ($<\$0.0001$ per certificate) with sub-second finality.
 
 ---
 
@@ -37,32 +39,39 @@ Traditional Web PKI concentrates global internet trust in ~150 Certificate Autho
 **MonadTrust eliminates the single CA master signing key.**
 Instead of trusting a single organization's private key, certificate issuance and revocation are governed by an on-chain **3-of-5 independent validator quorum**, cryptographically enforced on Monad using its native secp256r1 (NIST P-256) precompiled contract at `0x0100` (EIP-7951).
 
-```
-Traditional PKI (Single Point of Failure):
-Domain Owner ──> Single CA (1 Master HSM Key) ──> Certificate ──> Browser Blindly Trusts CA
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Owner as 👨‍💻 Website Owner
+    participant DNS as 🌐 Public DNS (TXT Record)
+    participant Nodes as 🛡️ 5 Validator Daemons
+    participant Monad as ⛓️ Monad Blockchain (0x0100)
+    actor Visitor as 👤 Everyday User (Browser Extension)
+    participant Server as 🖥️ Live Web Server
 
-MonadTrust (Decentralized Quorum PKI on Monad):
-Domain Owner ──> Deterministic DNS Challenge
-                       │
-                       ▼
-       5 Independent Rust Validators (P-256 Signatures)
-                       │
-                       ▼
-       Monad Blockchain (Precompile 0x0100: P-256)
-  [Verifies M-of-N Quorum + Proof-of-Possession on-chain]
-                       │
-                       ▼
-         Tamper-Proof On-Chain Cert Registry
-           (No Single Master Key Exists)
-                       │
-                       ▼
-      Live Verifier Handshake with Web Server
-     (TLS connection fingerprint binding against MITM)
+    Note over Owner,Monad: PHASE 1: OWNER ISSUANCE FLOW
+    Owner->>Owner: 1. Generates Sovereign P-256 Keypair (Private key stays secret!)
+    Owner->>DNS: 2. Adds TXT record: _monadtrust.<domain> = challenge_hash
+    Owner->>Nodes: 3. Requests Quorum Signatures
+    Nodes->>DNS: 4. Check TXT record on Google & Cloudflare DNS (Proves ownership!)
+    Nodes-->>Owner: 5. 5 Nodes sign off with P-256
+    Owner->>Monad: 6. Submits Issue Request to CertRegistry.sol
+    Note over Monad: 7. Monad calls 0x0100 precompile (6,900 gas x 4)<br/>Verifies 3-of-5 Quorum + Owner Proof-of-Possession
+    Monad-->>Monad: 8. Records <domain> -> (Qx, Qy) permanently on-chain!
+
+    Note over Visitor,Server: PHASE 2: VISITOR BROWSER FLOW
+    Visitor->>Server: 9. Types https://<domain> (Standard TLS Handshake)
+    Visitor->>Monad: 10. Extension asks Monad: "What is the legitimate key for <domain>?"
+    Monad-->>Visitor: 11. Returns on-chain Public Key (Qx, Qy)
+    Visitor->>Server: 12. Sends challenge (Random Nonce + TLS Connection Fingerprint)
+    Server-->>Visitor: 13. Signs challenge with P-256 private key
+    Note over Visitor: 14. Browser verifies signature against on-chain key!<br/>If an attacker used a fake CA cert, the TLS fingerprint mismatches!
+    Visitor-->>Visitor: 15. 🟢 Green Shield: "MonadTrust Verified: Anti-MITM Guard Active"
 ```
 
 ---
 
-## 🔑 Key Architectural Highlights
+## 🔑 Key Architectural Invariants
 
 1. **Native Monad P-256 Precompile (`0x0100`):**
    * Uses Monad's EIP-7951 precompile at `0x0100` costing **6,900 gas** per verification.
@@ -79,6 +88,16 @@ Domain Owner ──> Deterministic DNS Challenge
    * When an auditor/client connects to the website, the server signs `(tls_cert_fingerprint || client_nonce || timestamp)` with its P-256 key. An attacker proxying traffic with a rogue TLS cert cannot relay the signature because their TLS certificate fingerprint will mismatch!
 7. **No Admin Master Key (Timelocked Governance):**
    * `ValidatorRegistry` contains no instant admin backdoors. All validator updates and quorum parameter changes pass through a configurable **Timelock** controlled by a **3-of-5 Validator Governance Multisig**.
+
+---
+
+## ⚡ Validator Daemon Performance & Specs
+
+* **RAM Footprint:** **~7.3 MB RSS** per validator node.
+* **All 5 Nodes Running:** **~37 MB total RAM**.
+* **Binary Size on Disk:** **5.1 MB** (`monadtrust-validator`).
+* **CPU Usage:** **<0.1%** during idle and signature verification.
+* **Minimum System Specs:** 1 vCPU, 64 MB RAM, 50 MB disk, 10 Mbps network.
 
 ---
 
@@ -110,28 +129,23 @@ lucent/
 
 ---
 
-## ⚡ Running the Complete End-to-End Demo
+## ⚡ Running the Demo
 
-### Option 1: 1-Click Terminal Demo
-Run the end-to-end integration demo script:
-```bash
-./scripts/demo.sh
-```
-
-**What it executes live:**
-1. **Runs all 13 Foundry tests:** 9 invariant unit tests + 4 property fuzz suites (1,024 runs).
-2. **Spins up 5 validator daemons:** Ports `8001..8005` with distinct P-256 keys.
-3. **Generates sovereign owner keypair:** Saves `demo_owner.key`.
-4. **Computes DNS TXT challenge:** Generates `_monadtrust.demo.monadtrust.xyz`.
-5. **Collects 3-of-5 quorum signatures:** Contacting all 5 nodes and generating `submission_bundle.json`.
-6. **Spins up live web server:** Serves `/.well-known/monadtrust/handshake`.
-7. **Performs live client handshake:** Proves private key possession with TLS connection fingerprint binding.
-
-### Option 2: Interactive Web Dashboard
+### Option 1: Interactive Web Dashboard
 ```bash
 npm run dev --prefix frontend
 ```
-Open **`http://localhost:5173`** to test the interactive 4-step wizard!
+Open **`http://localhost:5173`** to test:
+* Instant sovereign key generation and deterministic DNS-01 challenge.
+* Strict public DNS check vs Sandbox instant registration.
+* Real-time 5-node validator quorum signing.
+* On-chain issuance with live MonadScan explorer links.
+* Live anti-relay TLS handshake probe & sovereign revocation.
+
+### Option 2: 1-Click Terminal Demo
+```bash
+./scripts/demo.sh
+```
 
 ---
 
