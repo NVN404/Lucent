@@ -635,7 +635,7 @@ export default function App() {
                         />
                         <div>
                           <div className="font-semibold text-slate-800 text-[11px]">{v.region}</div>
-                          <div className="text-[10px] text-slate-400">Port {v.port} · {v.latency}</div>
+                          <div className="text-[10px] text-slate-400">Port {v.port} | {v.latency}</div>
                         </div>
                       </div>
 

@@ -1,4 +1,4 @@
-# Lucent
+﻿# Lucent
 ### Decentralized Public Key Infrastructure (dPKI) on Monad
 *Eliminating Centralized CA Master Keys using Monad's Native P-256 (`0x0100`) Precompile*
 
@@ -12,7 +12,7 @@
 
 ---
 
-## 🚀 Live Monad Testnet Deployment (Verified On-Chain)
+## Live Monad Testnet Deployment (Verified On-Chain)
 
 Both smart contracts are **broadcast, verified, and confirmed on Monad Testnet**:
 
@@ -29,25 +29,25 @@ Both smart contracts are **broadcast, verified, and confirmed on Monad Testnet**
 
 ---
 
-## 📌 The Incident & Motivation
+## The Incident & Motivation
 Traditional Web PKI concentrates global internet trust in ~150 Certificate Authorities (CAs). The **eMudhra incident** exposed the core vulnerability of this architecture: an operational flaw during an HSM key wrap/unwrap ceremony generated weak intermediate CA private keys that remained undetected for ~18 months through multiple audit cycles.
 * When a CA's master signing key is compromised or weak, fraudulent certificates can be forged for any domain worldwide.
 * Traditional revocation mechanisms (CRLs and OCSP) are broken, slow to propagate, and compromise user privacy.
 * Certificate Transparency (CT) logs are strictly *reactive* (they detect misissuance after the fact), not preventative.
 
-## 💡 The Solution: Lucent
+## The Solution: Lucent
 **Lucent eliminates the single CA master signing key.**
 Instead of trusting a single organization's private key, certificate issuance and revocation are governed by an on-chain **3-of-5 independent validator quorum**, cryptographically enforced on Monad using its native secp256r1 (NIST P-256) precompiled contract at `0x0100` (EIP-7951).
 
 ```mermaid
 sequenceDiagram
     autonumber
-    actor Owner as 👨‍💻 Website Owner
-    participant DNS as 🌐 Public DNS (TXT Record)
-    participant Nodes as 🛡️ 5 Validator Daemons
-    participant Monad as ⛓️ Monad Blockchain (0x0100)
-    actor Visitor as 👤 Everyday User (Browser Extension)
-    participant Server as 🖥️ Live Web Server
+    actor Owner as Website Owner
+    participant DNS as Public DNS (TXT Record)
+    participant Nodes as 5 Validator Daemons
+    participant Monad as Monad Blockchain (0x0100)
+    actor Visitor as Everyday User (Browser Extension)
+    participant Server as Live Web Server
 
     Note over Owner,Monad: PHASE 1: OWNER ISSUANCE FLOW
     Owner->>Owner: 1. Generates Sovereign P-256 Keypair (Private key stays secret!)
@@ -66,12 +66,12 @@ sequenceDiagram
     Visitor->>Server: 12. Sends challenge (Random Nonce + TLS Connection Fingerprint)
     Server-->>Visitor: 13. Signs challenge with P-256 private key
     Note over Visitor: 14. Browser verifies signature against on-chain key!<br/>If an attacker used a fake CA cert, the TLS fingerprint mismatches!
-    Visitor-->>Visitor: 15. 🟢 Green Shield: "Lucent Verified: Anti-MITM Guard Active"
+    Visitor-->>Visitor: 15. Green Shield: "Lucent Verified: Anti-MITM Guard Active"
 ```
 
 ---
 
-## 🔑 Key Architectural Invariants
+## Key Architectural Invariants
 
 1. **Native Monad P-256 Precompile (`0x0100`):**
    * Uses Monad's EIP-7951 precompile at `0x0100` costing **6,900 gas** per verification.
@@ -91,7 +91,7 @@ sequenceDiagram
 
 ---
 
-## ⚡ Validator Daemon Performance & Specs
+## Validator Daemon Performance & Specs
 
 * **RAM Footprint:** **~7.3 MB RSS** per validator node.
 * **All 5 Nodes Running:** **~37 MB total RAM**.
@@ -101,7 +101,7 @@ sequenceDiagram
 
 ---
 
-## 📂 Repository Structure
+## Repository Structure
 
 ```
 lucent/
@@ -129,7 +129,7 @@ lucent/
 
 ---
 
-## ⚡ Running the Demo
+## Running the Demo
 
 ### Option 1: Interactive Web Dashboard
 ```bash
@@ -149,7 +149,7 @@ Open **`http://localhost:5173`** to test:
 
 ---
 
-## 📜 Monad Blitz Devcon Mumbai Submission Reference
+## Monad Blitz Devcon Mumbai Submission Reference
 * Initial fork: [monad-developers/monad-blitz-devcon-mumbai](https://github.com/monad-developers/monad-blitz-devcon-mumbai)
 * Repository: [NVN404/Lucent](https://github.com/NVN404/Lucent)
 * Blitz Portal: [blitz.devnads.com](https://blitz.devnads.com)
