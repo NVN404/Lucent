@@ -19,7 +19,7 @@ export default function App() {
     return typeof window !== 'undefined' && window.location.hash === '#/app' ? 'app' : 'landing'
   })
   const [activeTab, setActiveTab] = useState('dashboard') // 'dashboard' | 'inspector' | 'validators' | 'registry'
-  const [domain, setDomain] = useState('dotlab.studio')
+  const [domain, setDomain] = useState('')
   const [dnsMode, setDnsMode] = useState('strict') // 'strict' | 'demo'
   const [dnsCheckStatus, setDnsCheckStatus] = useState(null) // null | 'checking' | 'error' | 'success'
   const [dnsErrorMessage, setDnsErrorMessage] = useState('')
@@ -125,6 +125,12 @@ export default function App() {
 
   // Public DNS Ownership Verification (Strict Mode)
   const verifyDnsOwnership = async () => {
+    if (!domain) {
+      setDnsCheckStatus('error')
+      setDnsErrorMessage('Please enter your website domain name first.')
+      return false
+    }
+
     if (dnsMode === 'demo') {
       setDnsCheckStatus('success')
       setDnsErrorMessage('')
@@ -218,6 +224,16 @@ export default function App() {
       setOnChainCert(certData)
       setIsIssuing(false)
       triggerConfetti()
+
+      // Broadcast to Lucent browser extension
+      if (typeof window !== 'undefined') {
+        window.postMessage({
+          type: 'LUCENT_CERT_ISSUED',
+          domain: domain,
+          certData: certData
+        }, '*')
+      }
+
       addLog(`[BLOCK] Monad Block #76869230 confirmed on Monad Testnet!`)
       addLog(`[STATUS] Certificate status: ACTIVE & TRUSTED on CertRegistry.`)
     }, 1100)
@@ -1027,12 +1043,12 @@ export default function App() {
             {/* Certificate Entries Grid */}
             <div className="space-y-4">
               {[
-                {
-                  domainName: domain,
-                  status: isRevoked ? 'REVOKED' : (onChainCert ? 'ACTIVE & VALID' : 'ACTIVE & VALID'),
-                  certId: onChainCert ? onChainCert.certId : '0x8f3c7a91bb40217ec93081e62a4d95204ef0139b567aa14820dc15a840e7912b',
-                  txHash: onChainCert ? onChainCert.txHash : '0x7b477f7f68534308071af997ab0b545c2fbede2fbe9a14f9ec564b844fe2b941',
-                  block: onChainCert ? onChainCert.blockNumber : 76869230,
+                ...(onChainCert ? [{
+                  domainName: onChainCert.domain,
+                  status: isRevoked ? 'REVOKED' : 'ACTIVE & VALID',
+                  certId: onChainCert.certId,
+                  txHash: onChainCert.txHash,
+                  block: onChainCert.blockNumber,
                   qx: ownerKey.qx,
                   qy: ownerKey.qy,
                   keyHash: ownerKey.keyHash,
@@ -1040,7 +1056,7 @@ export default function App() {
                   expires: '90 Days (Temporal short-lived)',
                   gas: '27,600 Gas (4 checks)',
                   isLocalOwner: true
-                },
+                }] : []),
                 {
                   domainName: 'demo.lucent.id',
                   status: 'ACTIVE & VALID',

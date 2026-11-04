@@ -1,11 +1,8 @@
 // Lucent dPKI Background Service Worker (Manifest V3)
 
-const REGISTERED_DOMAINS = [
-  'dotlab.studio',
+const BASE_DOMAINS = [
   'demo.lucent.id',
-  'auth.monadtrust.xyz',
-  'localhost',
-  '127.0.0.1'
+  'auth.monadtrust.xyz'
 ];
 
 chrome.runtime.onInstalled.addListener(() => {
@@ -29,7 +26,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
       const host = url.hostname.toLowerCase();
 
       // Check if MITM attack simulation is currently active
-      chrome.storage.local.get(['mitmSimulation'], (res) => {
+      chrome.storage.local.get(['mitmSimulation', 'issuedDomains'], (res) => {
         if (res && res.mitmSimulation) {
           chrome.action.setBadgeText({ tabId, text: '!' });
           chrome.action.setBadgeBackgroundColor({ tabId, color: '#EF4444' });
@@ -37,7 +34,9 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
           return;
         }
 
-        if (REGISTERED_DOMAINS.includes(host)) {
+        const isVerified = BASE_DOMAINS.includes(host) || (res.issuedDomains && !!res.issuedDomains[host]);
+
+        if (isVerified) {
           chrome.action.setBadgeText({ tabId, text: '✓' });
           chrome.action.setBadgeBackgroundColor({ tabId, color: '#10B981' });
           chrome.action.setTitle({ tabId, title: `Lucent: ${host} is verified on Monad via 0x0100` });

@@ -3,14 +3,8 @@
 const MONAD_RPC_URL = 'https://testnet-rpc.monad.xyz';
 const CERT_REGISTRY = '0xE4ec4B30F417260cf0C3cdca8fbEAE6d337c080b';
 
-const REGISTERED_DOMAINS = {
-  'dotlab.studio': {
-    status: 'ACTIVE',
-    keyHash: '0x1ec92b50d3e9b1630f820f1ed452bc6b657e42abf114e2bcaece5803af7fb114',
-    quorum: 'Validator Quorum Attested',
-    gas: '27,600 Gas (4 checks)',
-    certId: '0x8f3c7a91bb40217ec93081e62a4d95204ef0139b567aa14820dc15a840e7912b'
-  },
+// Pre-seeded test anchors (dotlab.studio is NOT pre-verified, must be issued by the user!)
+const BASE_REGISTERED_DOMAINS = {
   'demo.lucent.id': {
     status: 'ACTIVE',
     keyHash: '0x7c94b291a84f3e6189dc72301fa38290bcdae49182374619a826491028374619',
@@ -24,18 +18,12 @@ const REGISTERED_DOMAINS = {
     quorum: 'Validator Quorum Attested',
     gas: '27,600 Gas (4 checks)',
     certId: '0x5c4d3e2f1a0b9c8d7e6f5a4b3c2d1e0f9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d'
-  },
-  'localhost': {
-    status: 'ACTIVE',
-    keyHash: '0x1ec92b50d3e9b1630f820f1ed452bc6b657e42abf114e2bcaece5803af7fb114',
-    quorum: 'Validator Quorum Attested',
-    gas: '27,600 Gas (4 checks)',
-    certId: '0x8f3c7a91bb40217ec93081e62a4d95204ef0139b567aa14820dc15a840e7912b'
   }
 };
 
+let dynamicRegisteredDomains = { ...BASE_REGISTERED_DOMAINS };
 let activeTabId = null;
-let currentDomain = 'dotlab.studio';
+let currentDomain = 'demo.lucent.id';
 let isInternalPage = false;
 let isMitmSimulated = false;
 
@@ -43,39 +31,44 @@ document.addEventListener('DOMContentLoaded', async () => {
   const mitmToggle = document.getElementById('mitmToggle');
   const pillBtns = document.querySelectorAll('.pill-btn');
 
-  // Load MITM simulation state from storage
+  // Load dynamically issued domains and simulation state from storage
   if (chrome && chrome.storage && chrome.storage.local) {
-    chrome.storage.local.get(['mitmSimulation'], (res) => {
+    chrome.storage.local.get(['issuedDomains', 'mitmSimulation'], (res) => {
+      if (res.issuedDomains) {
+        dynamicRegisteredDomains = { ...BASE_REGISTERED_DOMAINS, ...res.issuedDomains };
+      }
       isMitmSimulated = !!res.mitmSimulation;
       mitmToggle.checked = isMitmSimulated;
-    });
-  }
-
-  // Detect active tab URL automatically
-  if (chrome && chrome.tabs) {
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      if (tabs && tabs[0] && tabs[0].url) {
-        activeTabId = tabs[0].id;
-        try {
-          const url = new URL(tabs[0].url);
-          // Only actual web protocols (http, https)
-          if (url.protocol === 'http:' || url.protocol === 'https:') {
-            currentDomain = url.hostname.toLowerCase();
-            isInternalPage = false;
-          } else {
-            // Browser internal page (chrome://extensions, brave://, edge://, file://)
-            isInternalPage = true;
-            currentDomain = 'dotlab.studio'; // Fallback to verified demo domain
-          }
-        } catch (e) {
-          isInternalPage = true;
-          currentDomain = 'dotlab.studio';
-        }
-      }
-      renderDomainState(currentDomain);
+      initActiveTab();
     });
   } else {
-    renderDomainState('dotlab.studio');
+    initActiveTab();
+  }
+
+  function initActiveTab() {
+    if (chrome && chrome.tabs) {
+      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        if (tabs && tabs[0] && tabs[0].url) {
+          activeTabId = tabs[0].id;
+          try {
+            const url = new URL(tabs[0].url);
+            if (url.protocol === 'http:' || url.protocol === 'https:') {
+              currentDomain = url.hostname.toLowerCase();
+              isInternalPage = false;
+            } else {
+              isInternalPage = true;
+              currentDomain = 'demo.lucent.id';
+            }
+          } catch (e) {
+            isInternalPage = true;
+            currentDomain = 'demo.lucent.id';
+          }
+        }
+        renderDomainState(currentDomain);
+      });
+    } else {
+      renderDomainState('demo.lucent.id');
+    }
   }
 
   // Handle MITM attack toggle
@@ -86,14 +79,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       chrome.storage.local.set({ mitmSimulation: isMitmSimulated });
     }
 
-    // Send real-time notification to content script on active tab
     if (activeTabId && chrome && chrome.tabs) {
       chrome.tabs.sendMessage(activeTabId, {
         action: 'SET_MITM_ATTACK',
         enabled: isMitmSimulated
-      }, () => {
-        // Ignore if content script not loaded
-      });
+      }, () => {});
     }
 
     renderDomainState(currentDomain);
@@ -133,8 +123,8 @@ function renderDomainState(domain) {
 
   if (isInternalPage) {
     tabTypeLabel.textContent = 'Chrome Page Detected';
-    autoStatusPill.textContent = '⚡ Demo Guard';
-    activeDomainSubtext.textContent = 'Browser settings active. Auto-testing dotlab.studio';
+    autoStatusPill.textContent = '⚡ Test Mode';
+    activeDomainSubtext.textContent = 'Browser settings active. Testing ' + domain;
     siteIcon.textContent = '🛡️';
   } else {
     tabTypeLabel.textContent = 'Active Website';
@@ -171,7 +161,7 @@ function renderDomainState(domain) {
   }
 
   // 2. Verified Monad dPKI State
-  const reg = REGISTERED_DOMAINS[domain];
+  const reg = dynamicRegisteredDomains[domain];
   if (reg) {
     statusBanner.className = 'status-banner status-verified';
     statusIcon.innerHTML = `

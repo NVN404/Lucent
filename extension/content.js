@@ -3,14 +3,18 @@
 
 (function () {
   const host = window.location.hostname.toLowerCase();
-  const VERIFIED_DOMAINS = ['dotlab.studio', 'demo.lucent.id', 'auth.monadtrust.xyz', 'localhost', '127.0.0.1'];
+  const BASE_VERIFIED_DOMAINS = ['demo.lucent.id', 'auth.monadtrust.xyz'];
 
+  let issuedDomains = {};
   let isMitmActive = false;
   let isStrictActive = false;
 
-  // Initialize from storage
+  // Initialize from chrome.storage
   if (chrome && chrome.storage && chrome.storage.local) {
-    chrome.storage.local.get(['mitmSimulation', 'strictMode'], (res) => {
+    chrome.storage.local.get(['issuedDomains', 'mitmSimulation', 'strictMode'], (res) => {
+      if (res.issuedDomains) {
+        issuedDomains = res.issuedDomains;
+      }
       isMitmActive = !!res.mitmSimulation;
       isStrictActive = !!res.strictMode;
       evaluateSecurityState();
@@ -18,6 +22,30 @@
   } else {
     evaluateSecurityState();
   }
+
+  // Listen to web app messages when a certificate is issued in the Lucent Console
+  window.addEventListener('message', (event) => {
+    if (event.data && event.data.type === 'LUCENT_CERT_ISSUED') {
+      const { domain, certData } = event.data;
+      if (domain) {
+        const cleanDomain = domain.trim().toLowerCase();
+        issuedDomains[cleanDomain] = {
+          status: 'ACTIVE',
+          keyHash: certData?.keyHash || '0x1ec92b50d3e9b1630f820f1ed452bc6b657e42abf114e2bcaece5803af7fb114',
+          quorum: 'Validator Quorum Attested',
+          gas: '27,600 Gas (4 checks)',
+          certId: certData?.certId || '0x8f3c7a91bb40217ec93081e62a4d95204ef0139b567aa14820dc15a840e7912b'
+        };
+
+        if (chrome && chrome.storage && chrome.storage.local) {
+          chrome.storage.local.set({ issuedDomains }, () => {
+            console.log(`[Lucent Gatekeeper] Synced newly issued certificate for ${cleanDomain} on Monad!`);
+          });
+        }
+        evaluateSecurityState();
+      }
+    }
+  });
 
   // Listen for real-time control messages from popup
   if (chrome && chrome.runtime && chrome.runtime.onMessage) {
@@ -31,7 +59,7 @@
         evaluateSecurityState();
         sendResponse({ success: true, isStrictActive });
       } else if (msg.action === 'QUERY_STATUS') {
-        const isVerified = VERIFIED_DOMAINS.includes(host);
+        const isVerified = BASE_VERIFIED_DOMAINS.includes(host) || !!issuedDomains[host];
         sendResponse({ host, isVerified, isMitmActive, isStrictActive });
       }
       return true;
@@ -39,7 +67,7 @@
   }
 
   function evaluateSecurityState() {
-    const isVerified = VERIFIED_DOMAINS.includes(host);
+    const isVerified = BASE_VERIFIED_DOMAINS.includes(host) || !!issuedDomains[host];
 
     if (isMitmActive) {
       showBlockScreen({
@@ -307,7 +335,6 @@
     if (el) el.remove();
   }
 
-  // Bottom-right persistent floating green badge for verified sites
   function injectTrustBadge() {
     if (document.getElementById('lucent-trust-badge')) return;
 
