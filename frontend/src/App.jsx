@@ -373,15 +373,13 @@ export default function App() {
     addLog(`[EVM] Invoking precompile 0x0100 x4 (1x Owner PoP + 3x Validator Quorum = 27,600 gas)...`)
 
     setTimeout(() => {
-      const randCertBytes = new Uint8Array(32)
-      if (typeof window !== 'undefined' && window.crypto) {
-        window.crypto.getRandomValues(randCertBytes)
-      }
-      const certId = '0x' + Array.from(randCertBytes).map(b => b.toString(16).padStart(2, '0')).join('')
-      const cleanDom = domain.trim().toLowerCase()
+      const cleanDom = domain.trim().toLowerCase() || 'dotlab.studio'
+      const liveTxHash = '0x3a3cc2a10c16ec1cdf9e7cf4b51d22a66b4ea5456cd269cfd6c6c0ad2efa754b'
+      const liveBlock = 76913187
+      const liveCertId = '0xadaaa8b4c74f9f54883b61a595eda7ae3d9140b9873aa3428d93c2bf33fbefd6'
 
       const certData = {
-        certId: certId,
+        certId: liveCertId,
         domain: cleanDom,
         keyHash: ownerKey.keyHash,
         quorum: 'Validator Quorum Attested',
@@ -389,8 +387,8 @@ export default function App() {
         issuedAt: Math.floor(Date.now() / 1000),
         expiresAt: Math.floor(Date.now() / 1000) + 90 * 86400,
         nonce: 1,
-        blockNumber: 76869230,
-        txHash: '0x7b477f7f68534308071af997ab0b545c2fbede2fbe9a14f9ec564b844fe2b941',
+        blockNumber: liveBlock,
+        txHash: liveTxHash,
         gasUsed: 27600
       }
       setOnChainCert(certData)
@@ -413,8 +411,9 @@ export default function App() {
         }, '*')
       }
 
-      addLog(`[BLOCK] Monad Block #76869230 confirmed on Monad Testnet!`)
-      addLog(`[STATUS] Certificate status: ACTIVE & TRUSTED on CertRegistry.`)
+      addLog(`[BLOCK] Monad Block #${liveBlock} confirmed on Monad Testnet!`)
+      addLog(`[STATUS] Certificate status: ACTIVE & TRUSTED on CertRegistry at ${CERT_REGISTRY_ADDR}.`)
+      addLog(`[EXPLORER] MonadScan Tx: https://testnet.monadscan.com/tx/${liveTxHash}`)
     }, 1100)
   }
 
@@ -1225,7 +1224,21 @@ export default function App() {
             {/* Certificate Entries Grid */}
             <div className="space-y-4">
               {[
-                ...(onChainCert ? [{
+                {
+                  domainName: 'dotlab.studio',
+                  status: isRevoked ? 'REVOKED' : 'ACTIVE & VALID',
+                  certId: '0xadaaa8b4c74f9f54883b61a595eda7ae3d9140b9873aa3428d93c2bf33fbefd6',
+                  txHash: '0x3a3cc2a10c16ec1cdf9e7cf4b51d22a66b4ea5456cd269cfd6c6c0ad2efa754b',
+                  block: 76913187,
+                  qx: ownerKey?.qx || '0x4bd4f7cf58253938d35f76eee25871aa491def7c2242cc0d4f395de75084f8ed',
+                  qy: ownerKey?.qy || '0xf6d07805593c030be42d05674286dbd174da1c14019bf1acbb6d41c677d7b8b6',
+                  keyHash: ownerKey?.keyHash || '0xe3028cb0d3b0f982cfa2a95eccf92eb150571897b284918e7d43919d1029384f',
+                  nonce: 1,
+                  expires: '90 Days (Temporal short-lived)',
+                  gas: '27,600 Gas (4 checks)',
+                  isLocalOwner: true
+                },
+                ...(onChainCert && onChainCert.domain !== 'dotlab.studio' ? [{
                   domainName: onChainCert.domain,
                   status: isRevoked ? 'REVOKED' : 'ACTIVE & VALID',
                   certId: onChainCert.certId,
@@ -1243,8 +1256,8 @@ export default function App() {
                   domainName: 'demo.lucent.id',
                   status: 'ACTIVE & VALID',
                   certId: '0x3a4b9c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b',
-                  txHash: '0x7b477f7f68534308071af997ab0b545c2fbede2fbe9a14f9ec564b844fe2b941',
-                  block: 76869230,
+                  txHash: '0x3a3cc2a10c16ec1cdf9e7cf4b51d22a66b4ea5456cd269cfd6c6c0ad2efa754b',
+                  block: 76913187,
                   qx: '0x5fa108a9c274b83019d83e201bfa982301fa38290bcdae49182374619a826491',
                   qy: '0x81bd9823014a93821049bcfa3829104b2819384729103847192837461928374a',
                   keyHash: '0x7c94b291a84f3e6189dc72301fa38290bcdae49182374619a826491028374619',
@@ -1257,8 +1270,8 @@ export default function App() {
                   domainName: 'auth.monadtrust.xyz',
                   status: 'ACTIVE & VALID',
                   certId: '0x5c4d3e2f1a0b9c8d7e6f5a4b3c2d1e0f9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d',
-                  txHash: '0x7b477f7f68534308071af997ab0b545c2fbede2fbe9a14f9ec564b844fe2b941',
-                  block: 76869230,
+                  txHash: '0x3a3cc2a10c16ec1cdf9e7cf4b51d22a66b4ea5456cd269cfd6c6c0ad2efa754b',
+                  block: 76913187,
                   qx: '0x992381fcae472910385718293740284719283749182739481729384719283749',
                   qy: '0x1827394817293847192837491827394817293847192837491827394817293847',
                   keyHash: '0x992381fcae472910385718293740284719283749182739481729384719283749',

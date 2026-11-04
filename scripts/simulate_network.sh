@@ -20,7 +20,7 @@ for i in {0..4}; do
         --port "$PORT" \
         --index "$i" \
         --seed "$SEED" \
-        --chain-id 10143 \
+        --chain-id 10143 --cert-registry 0xE4ec4B30F417260cf0C3cdca8fbEAE6d337c080b \
         --mock-dns > "$DIR/logs/validator_$i.log" 2>&1 &
     echo $! > "$DIR/logs/validator_$i.pid"
 done
