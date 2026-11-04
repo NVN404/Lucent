@@ -303,7 +303,7 @@ export default function App() {
                       Strict DNS (Public)
                     </button>
                     <button
-                      onClick={() => { setDnsMode('demo'); setDnsCheckStatus(null); }}
+                      onClick={() => { setDnsMode('demo'); setDnsCheckStatus(null); setDnsErrorMessage(''); }}
                       className={`px-2 py-0.5 text-[10px] rounded transition ${dnsMode === 'demo' ? 'bg-[#836EF9] text-white font-bold' : 'text-slate-400 hover:text-white'}`}
                     >
                       Demo Sandbox
@@ -328,20 +328,60 @@ export default function App() {
                 </div>
 
                 {/* Strict DNS Warning or Error */}
-                {dnsMode === 'strict' && (
+                {dnsMode === 'strict' ? (
                   <p className="text-[11px] text-amber-400/90 mt-1 flex items-center gap-1">
                     <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
-                    Strict Mode Active: Only actual domain owners with public DNS TXT record can issue!
+                    Strict Mode Active: Requires public DNS TXT record. Switch to Demo Sandbox for instant registration!
+                  </p>
+                ) : (
+                  <p className="text-[11px] text-emerald-400/90 mt-1 flex items-center gap-1">
+                    <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                    Demo Sandbox Active: Instant verification & on-chain issuance enabled for '{domain}'.
                   </p>
                 )}
 
                 {dnsCheckStatus === 'error' && (
-                  <div className="mt-2 p-3 bg-red-950/40 border border-red-500/50 rounded-xl text-xs font-mono text-red-300 flex items-start gap-2">
-                    <XCircle className="w-4 h-4 shrink-0 text-red-400 mt-0.5" />
-                    <div>
-                      <strong className="block text-red-400">Domain Ownership Verification Failed!</strong>
-                      <span>{dnsErrorMessage}</span>
+                  <div className="mt-2 p-3.5 bg-red-950/40 border border-red-500/50 rounded-xl text-xs font-mono text-red-300 space-y-2.5">
+                    <div className="flex items-start gap-2">
+                      <XCircle className="w-4 h-4 shrink-0 text-red-400 mt-0.5" />
+                      <div>
+                        <strong className="block text-red-400">Public DNS TXT Record Not Set Yet!</strong>
+                        <span>Public DNS (Cloudflare 1.1.1.1) did not find the challenge TXT record on your domain.</span>
+                      </div>
                     </div>
+                    <button
+                      onClick={() => {
+                        setDnsMode('demo')
+                        setDnsCheckStatus('success')
+                        setDnsErrorMessage('')
+                        // Trigger quorum immediately
+                        setTimeout(() => {
+                          setIsQuorumRequesting(true)
+                          addLog(`[SANDBOX] Bypassing public DNS check for '${domain}'...`)
+                          validators.forEach((v, idx) => {
+                            setTimeout(() => {
+                              setValidators((prev) =>
+                                prev.map((val) =>
+                                  val.id === idx
+                                    ? { ...val, status: 'verified', sig: `0x${idx}e7c...${idx + 1}a9` }
+                                    : val
+                                )
+                              )
+                              setQuorumCount((c) => c + 1)
+                              addLog(`Validator #${idx} (Port ${v.port}): Signed challenge for '${domain}'.`)
+                              if (idx === 4) {
+                                setIsQuorumRequesting(false)
+                                setStep(2)
+                                addLog(`✓ 5/5 Validator signatures collected for '${domain}'!`)
+                              }
+                            }, (idx + 1) * 350)
+                          })
+                        }, 50)
+                      }}
+                      className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 px-3 rounded-lg text-xs transition flex items-center justify-center gap-2 shadow-lg shadow-emerald-900/30"
+                    >
+                      ⚡ Bypass DNS & Register '{domain}' on Monad Now
+                    </button>
                   </div>
                 )}
               </div>
