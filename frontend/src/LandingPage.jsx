@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+﻿import React, { useState } from 'react'
 import {
   CheckCircle2, AlertTriangle, Key, Globe, Cpu,
   Server, ExternalLink, Copy, Check, Lock, ArrowRight, Activity,
@@ -246,75 +246,76 @@ export default function LandingPage({ onLaunchConsole }) {
       </section>
 
       {/* 2. THE INCIDENT POST-MORTEM & HOW LUCENT SOLVES IT */}
-      <section id="incident" className="py-16 md:py-24 border-b border-slate-200/80 bg-white scroll-mt-16">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6">
+      <section id="incident" className="py-16 md:py-20 border-b border-slate-200/80 bg-white scroll-mt-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-start">
 
-          {/* Eyebrow */}
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-50 border border-red-200 text-red-700 text-xs font-mono font-semibold mb-6">
-            <AlertTriangle className="w-3.5 h-3.5" />
-            <span>OCTOBER 2026 CASE STUDY</span>
-          </div>
-
-          {/* Headline */}
-          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-950 mb-5 leading-tight">
-            The eMudhra Incident: Why Centralized CAs Failed
-          </h2>
-
-          {/* Narrative paragraphs */}
-          <p className="text-slate-600 leading-relaxed text-base mb-4">
-            In October 2026, security researchers disclosed that eight intermediate CA signing keys of eMudhra were generated with predictable, near-zero entropy. The root cause was a flawed pseudo-random number generator used during HSM key ceremonies — an operational error that destroyed cryptographic uniqueness and left private keys mathematically derivable by outside actors.
-          </p>
-          <p className="text-slate-600 leading-relaxed text-base mb-4">
-            With derived CA keys in hand, attackers could sign authentic, browser-trusted TLS certificates for any domain in the world — Google, Apple, banking portals — without any consent from domain owners. The compromise operated invisibly across <strong className="text-slate-800">18 months and multiple compliance audit cycles</strong> because CA operations are opaque off-chain black boxes with no public, cryptographically verifiable state.
-          </p>
-          <p className="text-slate-600 leading-relaxed text-base mb-10">
-            When the incident finally surfaced, standard revocation infrastructure failed to contain the damage. Browsers cache CRL and OCSP responses for up to 48 hours; when responders time out, they fail-open — silently ignoring compromised certificates and leaving users exposed to active man-in-the-middle interception.
-          </p>
-
-          {/* Divider */}
-          <div className="flex items-center gap-3 mb-8">
-            <div className="h-px flex-1 bg-slate-200" />
-            <span className="text-[11px] font-mono font-bold uppercase tracking-widest text-slate-400">How Lucent addresses each flaw</span>
-            <div className="h-px flex-1 bg-slate-200" />
-          </div>
-
-          {/* Prose list of fixes */}
-          <div className="space-y-7">
-            {[
-              {
-                flaw: 'Solitary master signing key',
-                fix: '3-of-5 Threshold Quorum',
-                body: 'No single entity holds master signing power. Certificate issuance requires cryptographic agreement from at least three of five independent validator nodes distributed across Virginia, Frankfurt, Mumbai, Singapore, and Sao Paulo. Even with two keys stolen, forging a certificate is mathematically impossible.',
-              },
-              {
-                flaw: '48-hour CRL propagation and fail-open browsers',
-                fix: '0.8s On-Chain Revocation',
-                body: 'Revocations are committed as Monad state transitions confirmed in under one second. Client verifiers read live blockchain state and enforce fail-closed logic — a certificate with an on-chain revocation record is rejected immediately, with no caching window for an attacker to exploit.',
-              },
-              {
-                flaw: 'Zero domain-owner cryptographic consent',
-                fix: 'Sovereign Proof-of-Possession',
-                body: 'Issuance requires a valid NIST P-256 signature from the domain owner, verified on-chain via the Monad native precompile at address 0x0100 for exactly 6,900 gas. No CA can mint a certificate for your domain without a cryptographic proof that you authorized it.',
-              },
-              {
-                flaw: '18 months of silent, unauditable compromise',
-                fix: 'Public Ledger State',
-                body: 'Every validator signature, certificate commitment, and key rotation is recorded as immutable Monad state. Any party — auditor, researcher, or end user — can independently verify the full trust chain without relying on a CA\'s self-reported compliance logs.',
-              },
-            ].map(({ flaw, fix, body }) => (
-              <div key={flaw} className="flex gap-4">
-                <div className="mt-1.5 w-5 h-5 rounded-full bg-amber-100 border border-amber-300 flex items-center justify-center shrink-0">
-                  <CheckCircle2 className="w-3 h-3 text-amber-700" />
-                </div>
-                <div>
-                  <p className="text-xs text-slate-400 font-mono mb-0.5 line-through">{flaw}</p>
-                  <p className="text-sm font-semibold text-slate-900 mb-1">{fix}</p>
-                  <p className="text-sm text-slate-600 leading-relaxed">{body}</p>
-                </div>
+            {/* Left Column: Case Study Narrative (5 cols) */}
+            <div className="lg:col-span-5">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-50 border border-red-200 text-red-700 text-xs font-mono font-semibold mb-5">
+                <AlertTriangle className="w-3.5 h-3.5" />
+                <span>OCTOBER 2026 CASE STUDY</span>
               </div>
-            ))}
-          </div>
 
+              <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-950 mb-5 leading-tight">
+                The eMudhra Incident: Why Centralized CAs Failed
+              </h2>
+
+              <p className="text-slate-600 leading-relaxed text-sm sm:text-base mb-4">
+                In October 2026, security researchers disclosed that eight intermediate CA signing keys of eMudhra were generated with predictable, near-zero entropy. The root cause was a flawed pseudo-random number generator used during HSM key ceremonies - an operational error that destroyed cryptographic uniqueness and left private keys mathematically derivable by outside actors.
+              </p>
+              <p className="text-slate-600 leading-relaxed text-sm sm:text-base mb-4">
+                With derived CA keys in hand, attackers could sign authentic, browser-trusted TLS certificates for any domain in the world - Google, Apple, banking portals - without any consent from domain owners. The compromise operated invisibly across <strong className="text-slate-900 font-semibold">18 months and multiple compliance audit cycles</strong> because CA operations are opaque off-chain black boxes with no public, cryptographically verifiable state.
+              </p>
+              <p className="text-slate-600 leading-relaxed text-sm sm:text-base">
+                When the incident finally surfaced, standard revocation infrastructure failed to contain the damage. Browsers cache CRL and OCSP responses for up to 48 hours; when responders time out, they fail-open - silently ignoring compromised certificates and leaving users exposed to active man-in-the-middle interception.
+              </p>
+            </div>
+
+            {/* Right Column: How Lucent Solves Each Flaw (7 cols) */}
+            <div className="lg:col-span-7 lg:pl-4">
+              <div className="text-[11px] font-mono font-bold uppercase tracking-widest text-slate-400 mb-6 pb-2 border-b border-slate-100">
+                How Lucent Addresses Each Flaw
+              </div>
+
+              <div className="space-y-6">
+                {[
+                  {
+                    flaw: 'Solitary master signing key',
+                    fix: '3-of-5 Threshold Quorum',
+                    body: 'No single entity holds master signing power. Certificate issuance requires cryptographic agreement from at least three of five independent validator nodes distributed across Virginia, Frankfurt, Mumbai, Singapore, and Sao Paulo. Even with two keys stolen, forging a certificate is mathematically impossible.',
+                  },
+                  {
+                    flaw: '48-hour CRL propagation and fail-open browsers',
+                    fix: '0.8s On-Chain Revocation',
+                    body: 'Revocations are committed as Monad state transitions confirmed in under one second. Client verifiers read live blockchain state and enforce fail-closed logic - a certificate with an on-chain revocation record is rejected immediately, with no caching window for an attacker to exploit.',
+                  },
+                  {
+                    flaw: 'Zero domain-owner cryptographic consent',
+                    fix: 'Sovereign Proof-of-Possession',
+                    body: 'Issuance requires a valid NIST P-256 signature from the domain owner, verified on-chain via the Monad native precompile at address 0x0100 for exactly 6,900 gas. No CA can mint a certificate for your domain without a cryptographic proof that you authorized it.',
+                  },
+                  {
+                    flaw: '18 months of silent, unauditable compromise',
+                    fix: 'Public Ledger State',
+                    body: 'Every validator signature, certificate commitment, and key rotation is recorded as immutable Monad state. Any party - auditor, researcher, or end user - can independently verify the full trust chain without relying on a CA\'s self-reported compliance logs.',
+                  },
+                ].map(({ flaw, fix, body }) => (
+                  <div key={flaw} className="flex gap-4 items-start">
+                    <div className="mt-1 w-5 h-5 rounded-full bg-amber-100 border border-amber-300 flex items-center justify-center shrink-0">
+                      <CheckCircle2 className="w-3 h-3 text-amber-700" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-slate-400 font-mono mb-0.5 line-through">{flaw}</p>
+                      <p className="text-sm font-semibold text-slate-900 mb-1">{fix}</p>
+                      <p className="text-sm text-slate-600 leading-relaxed">{body}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+          </div>
         </div>
       </section>
 
