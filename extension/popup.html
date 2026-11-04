@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lucent dPKI Verifier</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="header">
+      <div class="brand">
+        <div class="logo-orb">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="title">LUCENT</h1>
+          <p class="subtitle">Monad dPKI Shield</p>
+        </div>
+      </div>
+      <div class="network-badge">
+        <span class="live-dot"></span>
+        <span>Monad Testnet</span>
+      </div>
+    </header>
+
+    <!-- Active Domain Inspection Card -->
+    <section class="card domain-card">
+      <div class="card-header">
+        <span class="label">Target Domain</span>
+        <button id="refreshBtn" class="icon-btn" title="Refresh on-chain state">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+          </svg>
+        </button>
+      </div>
+      <div class="domain-input-wrap">
+        <input type="text" id="domainInput" placeholder="Enter domain (e.g. dotlab.studio)" spellcheck="false" />
+        <button id="checkDomainBtn" class="btn-primary">Verify</button>
+      </div>
+    </section>
+
+    <!-- Trust Status Banner -->
+    <section id="statusBanner" class="status-banner status-verified">
+      <div class="status-icon-wrap" id="statusIcon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+      </div>
+      <div class="status-text">
+        <h2 id="statusTitle" class="status-title">Secured by Monad dPKI</h2>
+        <p id="statusDesc" class="status-desc">Domain authenticated on Monad via native 0x0100 NIST P-256 precompile.</p>
+      </div>
+    </section>
+
+    <!-- Telemetry Details -->
+    <section class="card telemetry-card">
+      <div class="card-title">Cryptographic Attestation</div>
+      <div class="metric-row">
+        <span class="metric-key">Quorum Consensus:</span>
+        <span class="metric-val highlight" id="quorumStatus">Validator Quorum Attested</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-key">On-Chain Precompile:</span>
+        <span class="metric-val text-monad" id="precompileVal">0x0100 (6,900 Gas / check)</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-key">Verification Latency:</span>
+        <span class="metric-val text-emerald" id="latencyVal">&lt; 0.8s Block Finality</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-key">P-256 Key Hash:</span>
+        <span class="metric-val font-mono" id="keyHashVal">0x1ec9...b114</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-key">Cert Registry:</span>
+        <a id="contractLink" href="https://testnet.monadscan.com/address/0xE4ec4B30F417260cf0C3cdca8fbEAE6d337c080b" target="_blank" class="metric-val link font-mono">
+          0xE4ec...080b ↗
+        </a>
+      </div>
+    </section>
+
+    <!-- Rogue CA / eMudhra MITM Simulation Mode -->
+    <section class="card simulation-card">
+      <div class="simulation-header">
+        <div class="sim-title">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+            <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+          <span>Simulate Rogue CA / MITM Attack</span>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="mitmToggle">
+          <span class="slider"></span>
+        </label>
+      </div>
+      <p class="sim-desc">
+        Toggle to simulate an attacker presenting an unauthorized SSL certificate signed by a compromised centralized CA (e.g. eMudhra incident).
+      </p>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <span>Lucent dPKI Protocol v2.0</span>
+      <a href="https://testnet.monadscan.com/address/0xE4ec4B30F417260cf0C3cdca8fbEAE6d337c080b" target="_blank" class="footer-link">MonadScan Explorer</a>
+    </footer>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

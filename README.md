@@ -1,4 +1,4 @@
-﻿# Lucent
+# Lucent
 ### Decentralized Public Key Infrastructure (dPKI) on Monad
 *Eliminating Centralized CA Master Keys using Monad's Native P-256 (`0x0100`) Precompile*
 
@@ -119,6 +119,11 @@ lucent/
 │   ├── validator/           # Multi-source DNS-01 verification & P-256 signing daemon
 │   ├── cli/                 # Domain owner ACME-style CLI (keygen, challenge, quorum requester)
 │   └── verifier/            # Client verifier & live TLS anti-relay handshake auditor
+├── extension/               # Chrome / Brave Manifest V3 Browser Extension (Client Verifier)
+│   ├── manifest.json        # Extension manifest v3 configuration
+│   ├── popup.html / js      # Interactive trust verification & MITM attack simulator
+│   ├── background.js        # Service worker intercepting navigation & setting trust badge
+│   └── content.js           # Non-intrusive floating dPKI verification shield on web pages
 ├── frontend/                # Interactive React / Tailwind Web Dashboard
 └── scripts/
     ├── simulate_network.sh  # Launches 5-node simulated validator network
@@ -146,6 +151,13 @@ Open **`http://localhost:5173`** to test:
 ```bash
 ./scripts/demo.sh
 ```
+
+### Option 3: Browser Extension (Chrome / Brave Manifest V3)
+Verify live domains directly in your browser:
+1. Open `chrome://extensions` (or `brave://extensions`).
+2. Toggle on **Developer mode** in the top-right corner.
+3. Click **Load unpacked** and select the `extension/` folder in this repo.
+4. Pin the **Lucent Shield** to verify `dotlab.studio` or any domain on Monad in sub-seconds, and test the interactive **Rogue CA / MITM Attack Simulator**!
 
 ---
 
