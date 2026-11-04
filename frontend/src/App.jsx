@@ -125,7 +125,8 @@ export default function App() {
 
   // Public DNS Ownership Verification (Strict Mode)
   const verifyDnsOwnership = async () => {
-    if (!domain) {
+    const cleanDomain = domain.trim().toLowerCase()
+    if (!cleanDomain) {
       setDnsCheckStatus('error')
       setDnsErrorMessage('Please enter your website domain name first.')
       return false
@@ -138,33 +139,46 @@ export default function App() {
     }
 
     setDnsCheckStatus('checking')
-    addLog(`[DNS-01] Querying global DNS-over-HTTPS (Cloudflare 1.1.1.1) for _lucent.${domain}...`)
+    addLog(`[DNS-01] Querying global DNS-over-HTTPS (Cloudflare & Google) for _lucent.${cleanDomain}...`)
 
+    let foundTxt = null
+
+    // 1. Try Cloudflare DNS
     try {
-      const res = await fetch(`https://cloudflare-dns.com/dns-query?name=_lucent.${domain}&type=TXT`, {
+      const res = await fetch(`https://cloudflare-dns.com/dns-query?name=_lucent.${cleanDomain}&type=TXT`, {
         headers: { accept: 'application/dns-json' }
       })
       const data = await res.json()
-      const foundTxt = data.Answer?.find(
+      foundTxt = data.Answer?.find(
         (a) => a.data && (a.data.includes('lucent-verify') || a.data.includes('monadtrust-verify'))
       )
+    } catch (e) {
+      // Fallback to Google
+    }
 
-      if (foundTxt) {
-        setDnsCheckStatus('success')
-        setDnsErrorMessage('')
-        addLog(`✓ DNS Verified: Found valid TXT challenge record for _lucent.${domain} on Cloudflare 1.1.1.1!`)
-        return true
-      } else {
-        setDnsCheckStatus('error')
-        const err = `Domain Ownership Verification Failed: TXT record '_lucent.${domain}' not found on public DNS! Only the verified owner of '${domain}' who configures this DNS TXT record can generate certificates.`
-        setDnsErrorMessage(err)
-        addLog(`✗ REJECTED: ${err}`)
-        return false
+    // 2. Try Google DNS (fallback / redundant quorum)
+    if (!foundTxt) {
+      try {
+        const gRes = await fetch(`https://dns.google/resolve?name=_lucent.${cleanDomain}&type=TXT`)
+        const gData = await gRes.json()
+        foundTxt = gData.Answer?.find(
+          (a) => a.data && (a.data.includes('lucent-verify') || a.data.includes('monadtrust-verify'))
+        )
+      } catch (e) {
+        // Fallback error below
       }
-    } catch {
+    }
+
+    if (foundTxt) {
+      setDnsCheckStatus('success')
+      setDnsErrorMessage('')
+      addLog(`✓ DNS Verified: Found valid TXT challenge record for _lucent.${cleanDomain} on public DNS!`)
+      return true
+    } else {
       setDnsCheckStatus('error')
-      const err = 'Public DNS lookup failed. Please check your domain name format.'
+      const err = `Domain Ownership Verification Failed: TXT record '_lucent.${cleanDomain}' not found on public DNS! Only the verified owner of '${cleanDomain}' who configures this DNS TXT record can generate certificates.`
       setDnsErrorMessage(err)
+      addLog(`✗ REJECTED: ${err}`)
       return false
     }
   }
@@ -225,8 +239,15 @@ export default function App() {
       setIsIssuing(false)
       triggerConfetti()
 
-      // Broadcast to Lucent browser extension
+      // Broadcast to Lucent browser extension & save to localStorage
       if (typeof window !== 'undefined') {
+        try {
+          const cleanDom = domain.trim().toLowerCase()
+          const issuedMap = JSON.parse(localStorage.getItem('lucent_issued_domains') || '{}')
+          issuedMap[cleanDom] = certData
+          localStorage.setItem('lucent_issued_domains', JSON.stringify(issuedMap))
+        } catch (e) {}
+
         window.postMessage({
           type: 'LUCENT_CERT_ISSUED',
           domain: domain,
