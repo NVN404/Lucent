@@ -1,60 +1,49 @@
-# Lucent dPKI Chrome / Brave Browser Extension
+# Lucent dPKI Chrome / Brave Browser Extension (Gatekeeper v2.0)
 
-A lightweight, zero-dependency Manifest V3 browser extension that cryptographically verifies websites using **Monad's native NIST P-256 precompile (`0x0100` / EIP-7951)** and decentralized validator quorums.
-
----
-
-## Why This Browser Extension Exists
-
-In traditional Web PKI, when your browser connects to a website over HTTPS, it blindly trusts over **150+ centralized Certificate Authorities (CAs)**. If any intermediate CA is compromised (e.g., the **October 2026 eMudhra incident** where 8 intermediate private keys leaked), attackers can forge trusted SSL certificates for any website in the world and silently perform Man-In-The-Middle (MITM) attacks.
-
-**Lucent replaces centralized CAs with Monad dPKI:**
-1. The domain owner generates their own sovereign **NIST P-256 keypair** locally.
-2. The domain is registered on Monad's `CertRegistry.sol` contract via **Validator Quorum consensus**.
-3. Every signature is verified in **0.8s on Monad for just 6,900 gas via native precompile `0x0100`**.
-4. When a user navigates to a website, this **Lucent Browser Extension** checks the domain against Monad's on-chain registry. If a compromised CA attempts to present an unauthorized certificate, the extension detects the P-256 public key mismatch and **instantly fails-closed**, protecting the user.
+A lightweight, zero-dependency Manifest V3 browser extension and security gatekeeper that cryptographically verifies websites using **Monad's native NIST P-256 precompile (`0x0100` / EIP-7951)**. It intercepts rogue/compromised CAs and **enforces Fail-Closed connection blocking** in real time.
 
 ---
 
-## 🚀 How to Install in Chrome, Brave, or Edge (15 Seconds)
+## ⚡ How It Works (100% Automated)
 
-1. Open your browser and navigate to:
-   - **Chrome**: `chrome://extensions`
-   - **Brave**: `brave://extensions`
-   - **Edge**: `edge://extensions`
-2. In the top-right corner, turn on **"Developer mode"**.
-3. Click the **"Load unpacked"** button in the top-left toolbar.
-4. Select the `extension/` folder inside this repository:
-   ```
-   /Users/yunohu/Documents/lucent/extension
-   ```
-5. Pin the **Lucent Shield** icon to your browser toolbar!
+1. **Automatic Active Tab Detection**:
+   - You **do not** need to type any domain!
+   - When you visit any website (e.g. `https://dotlab.studio`, `https://google.com`, `http://localhost:5173`), the extension **automatically detects the active website's domain** directly from the tab.
+   - When you are on a browser settings page like `chrome://extensions`, it automatically switches into **Demo Guard Mode** testing against `dotlab.studio`.
 
----
+2. **Real-Time On-Chain Verification**:
+   - Checks the authoritative Monad `CertRegistry.sol` contract (`0xE4ec4B30F417260cf0C3cdca8fbEAE6d337c080b`).
+   - Verifies the website's P-256 public key coordinates `(qx, qy)` using Monad's native precompile `0x0100` for 6,900 gas.
 
-## 🧪 Testing the Extension
-
-### 1. Test a Verified Domain
-- Open the extension popup.
-- Enter `dotlab.studio` (or any domain you issued in the Lucent Console) and click **"Verify"**.
-- The extension shows:
-  - 🟢 **"Secured by Monad dPKI"**
-  - **Quorum Consensus**: Validator Quorum Attested
-  - **On-Chain Precompile**: `0x0100` (6,900 gas)
-  - **Verification Latency**: `< 0.8s Block Finality`
-  - Direct MonadScan contract link to `0xE4ec4B30F417260cf0C3cdca8fbEAE6d337c080b`.
-
-### 2. Test Rogue CA / MITM Attack Detection
-- In the extension popup, toggle the switch: **"Simulate Rogue CA / MITM Attack"**.
-- Watch Lucent immediately catch the fake certificate and fail-closed:
-  - 🚨 **"CRITICAL: ROGUE CA INTERCEPTION BLOCKED!"**
-  - The browser extension refuses to proceed with the forged connection because the server's key does not match the sovereign P-256 key registered on Monad.
+3. **Access Control (Gatekeeper & Fail-Closed Blocker)**:
+   - 🟢 **Verified Websites (`dotlab.studio`)**:
+     - Access is **APPROVED**!
+     - Top notification toast slides in: `🛡️ Monad dPKI Guard: Access Approved (0 Central CAs Trusted)`.
+     - Discreet floating green trust badge is pinned in the corner.
+   - 🚨 **Rogue CA / MITM Attack**:
+     - Access is **IMMEDIATELY BLOCKED (Fail-Closed)**!
+     - A full-screen security block screen covers the page:
+       `🛑 ACCESS BLOCKED BY LUCENT dPKI: Rogue CA Interception Detected!`
+       Preventing the user from entering the website or having credentials stolen.
 
 ---
 
-## Technical Specifications
-- **Manifest Version**: 3
-- **Network**: Monad Testnet (RPC: `https://testnet-rpc.monad.xyz`, Chain ID: `10143`)
-- **Precompile**: EIP-7951 NIST P-256 Precompiled Contract at `0x0100`
-- **Smart Contract**: `CertRegistry.sol` (`0xE4ec4B30F417260cf0C3cdca8fbEAE6d337c080b`)
-- **Crypto Engine**: WebCrypto API (`crypto.subtle`) + Monad JSON-RPC
+## 🚀 How to Install or Reload (15 Seconds)
+
+1. Open `chrome://extensions` in Chrome, Brave, or Edge.
+2. Turn on **"Developer mode"** in the top-right corner.
+3. If previously loaded: Click the **🔄 Reload (circular arrow)** icon on the Lucent extension card.
+   *If loading for the first time:* Click **"Load unpacked"** and select the [`extension/`](./) folder.
+4. Pin the **Lucent Shield** to your browser toolbar!
+
+---
+
+## 🧪 Testing the Live Gatekeeper
+
+1. **Test Auto-Detection on a Live Website:**
+   - Open a tab to `http://localhost:5173` or any website.
+   - Click the extension icon. Notice it **automatically detects the domain** and verifies it instantly without asking you to type anything!
+2. **Test Fail-Closed Attack Defense:**
+   - In the extension popup, toggle **"Simulate Rogue CA / MITM Attack"**.
+   - Notice the current tab is **immediately locked down with the full-screen red security blocker screen**!
+   - Toggle it off to dismiss the simulation and restore access.

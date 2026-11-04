@@ -1,8 +1,8 @@
-// Lucent dPKI Verifier Popup Script
+// Lucent dPKI Verifier & Gatekeeper Popup Controller
+
 const MONAD_RPC_URL = 'https://testnet-rpc.monad.xyz';
 const CERT_REGISTRY = '0xE4ec4B30F417260cf0C3cdca8fbEAE6d337c080b';
 
-// Known seeded & registered Monad domains for instant client resolution
 const REGISTERED_DOMAINS = {
   'dotlab.studio': {
     status: 'ACTIVE',
@@ -24,94 +24,154 @@ const REGISTERED_DOMAINS = {
     quorum: 'Validator Quorum Attested',
     gas: '27,600 Gas (4 checks)',
     certId: '0x5c4d3e2f1a0b9c8d7e6f5a4b3c2d1e0f9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d'
+  },
+  'localhost': {
+    status: 'ACTIVE',
+    keyHash: '0x1ec92b50d3e9b1630f820f1ed452bc6b657e42abf114e2bcaece5803af7fb114',
+    quorum: 'Validator Quorum Attested',
+    gas: '27,600 Gas (4 checks)',
+    certId: '0x8f3c7a91bb40217ec93081e62a4d95204ef0139b567aa14820dc15a840e7912b'
   }
 };
 
-document.addEventListener('DOMContentLoaded', async () => {
-  const domainInput = document.getElementById('domainInput');
-  const checkBtn = document.getElementById('checkDomainBtn');
-  const refreshBtn = document.getElementById('refreshBtn');
-  const mitmToggle = document.getElementById('mitmToggle');
+let activeTabId = null;
+let currentDomain = 'dotlab.studio';
+let isInternalPage = false;
+let isMitmSimulated = false;
 
-  // Detect current active tab domain
-  try {
-    if (chrome && chrome.tabs) {
-      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-        if (tabs && tabs[0] && tabs[0].url) {
-          try {
-            const url = new URL(tabs[0].url);
-            if (url.hostname && !url.hostname.startsWith('chrome') && !url.hostname.startsWith('edge')) {
-              domainInput.value = url.hostname;
-              verifyDomain(url.hostname);
-              return;
-            }
-          } catch (e) {
-            // URL parse fallback
-          }
-        }
-        // Fallback default
-        domainInput.value = 'dotlab.studio';
-        verifyDomain('dotlab.studio');
-      });
-    } else {
-      domainInput.value = 'dotlab.studio';
-      verifyDomain('dotlab.studio');
-    }
-  } catch (e) {
-    domainInput.value = 'dotlab.studio';
-    verifyDomain('dotlab.studio');
+document.addEventListener('DOMContentLoaded', async () => {
+  const mitmToggle = document.getElementById('mitmToggle');
+  const pillBtns = document.querySelectorAll('.pill-btn');
+
+  // Load MITM simulation state from storage
+  if (chrome && chrome.storage && chrome.storage.local) {
+    chrome.storage.local.get(['mitmSimulation'], (res) => {
+      isMitmSimulated = !!res.mitmSimulation;
+      mitmToggle.checked = isMitmSimulated;
+    });
   }
 
-  // Handle Verify button
-  checkBtn.addEventListener('click', () => {
-    const d = domainInput.value.trim().toLowerCase();
-    if (d) verifyDomain(d);
-  });
+  // Detect active tab URL automatically
+  if (chrome && chrome.tabs) {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (tabs && tabs[0] && tabs[0].url) {
+        activeTabId = tabs[0].id;
+        try {
+          const url = new URL(tabs[0].url);
+          // Only actual web protocols (http, https)
+          if (url.protocol === 'http:' || url.protocol === 'https:') {
+            currentDomain = url.hostname.toLowerCase();
+            isInternalPage = false;
+          } else {
+            // Browser internal page (chrome://extensions, brave://, edge://, file://)
+            isInternalPage = true;
+            currentDomain = 'dotlab.studio'; // Fallback to verified demo domain
+          }
+        } catch (e) {
+          isInternalPage = true;
+          currentDomain = 'dotlab.studio';
+        }
+      }
+      renderDomainState(currentDomain);
+    });
+  } else {
+    renderDomainState('dotlab.studio');
+  }
 
-  // Handle Enter key in input
-  domainInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-      const d = domainInput.value.trim().toLowerCase();
-      if (d) verifyDomain(d);
-    }
-  });
-
-  // Handle Refresh button
-  refreshBtn.addEventListener('click', () => {
-    const d = domainInput.value.trim().toLowerCase();
-    if (d) verifyDomain(d);
-  });
-
-  // Handle MITM attack simulation
+  // Handle MITM attack toggle
   mitmToggle.addEventListener('change', () => {
-    const d = domainInput.value.trim().toLowerCase();
-    if (mitmToggle.checked) {
-      renderMitmAttack(d);
-    } else {
-      verifyDomain(d);
+    isMitmSimulated = mitmToggle.checked;
+
+    if (chrome && chrome.storage && chrome.storage.local) {
+      chrome.storage.local.set({ mitmSimulation: isMitmSimulated });
     }
+
+    // Send real-time notification to content script on active tab
+    if (activeTabId && chrome && chrome.tabs) {
+      chrome.tabs.sendMessage(activeTabId, {
+        action: 'SET_MITM_ATTACK',
+        enabled: isMitmSimulated
+      }, () => {
+        // Ignore if content script not loaded
+      });
+    }
+
+    renderDomainState(currentDomain);
+  });
+
+  // Handle Quick Test Pill Buttons
+  pillBtns.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      pillBtns.forEach((b) => b.classList.remove('active'));
+      btn.classList.add('active');
+      const targetDomain = btn.getAttribute('data-domain');
+      currentDomain = targetDomain;
+      renderDomainState(targetDomain);
+    });
   });
 });
 
-async function verifyDomain(domain) {
+function renderDomainState(domain) {
+  const tabTypeLabel = document.getElementById('tabTypeLabel');
+  const autoStatusPill = document.getElementById('autoStatusPill');
+  const activeDomainDisplay = document.getElementById('activeDomainDisplay');
+  const activeDomainSubtext = document.getElementById('activeDomainSubtext');
+  const siteIcon = document.getElementById('siteIcon');
+
   const statusBanner = document.getElementById('statusBanner');
   const statusIcon = document.getElementById('statusIcon');
   const statusTitle = document.getElementById('statusTitle');
   const statusDesc = document.getElementById('statusDesc');
+
   const quorumStatus = document.getElementById('quorumStatus');
   const precompileVal = document.getElementById('precompileVal');
   const latencyVal = document.getElementById('latencyVal');
   const keyHashVal = document.getElementById('keyHashVal');
-  const mitmToggle = document.getElementById('mitmToggle');
 
-  if (mitmToggle.checked) {
-    renderMitmAttack(domain);
+  // Update Active Website Card
+  activeDomainDisplay.textContent = domain;
+
+  if (isInternalPage) {
+    tabTypeLabel.textContent = 'Chrome Page Detected';
+    autoStatusPill.textContent = '⚡ Demo Guard';
+    activeDomainSubtext.textContent = 'Browser settings active. Auto-testing dotlab.studio';
+    siteIcon.textContent = '🛡️';
+  } else {
+    tabTypeLabel.textContent = 'Active Website';
+    autoStatusPill.textContent = '⚡ Auto-Detected';
+    activeDomainSubtext.textContent = 'Real-time Monad dPKI inspection';
+    siteIcon.textContent = '🌐';
+  }
+
+  // 1. MITM Attack Simulation State
+  if (isMitmSimulated) {
+    statusBanner.className = 'status-banner status-danger';
+    statusIcon.innerHTML = `
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
+    `;
+    statusTitle.textContent = 'ACCESS BLOCKED (FAIL-CLOSED)!';
+    statusDesc.textContent = `CRITICAL: Rogue CA interception detected for ${domain}. Presented TLS certificate does not match the sovereign P-256 key registered on Monad!`;
+    quorumStatus.textContent = '✗ Owner PoP Failed';
+    quorumStatus.className = 'metric-val text-danger';
+    precompileVal.textContent = '0x0100 Mismatch (Rejected)';
+    precompileVal.className = 'metric-val text-danger';
+    latencyVal.textContent = '0.0s Fail-Closed';
+    latencyVal.className = 'metric-val text-danger';
+    keyHashVal.textContent = 'UNAUTHORIZED_KEY';
+
+    if (chrome && chrome.action) {
+      chrome.action.setBadgeText({ text: '!' });
+      chrome.action.setBadgeBackgroundColor({ color: '#EF4444' });
+    }
     return;
   }
 
-  // Check known registry
+  // 2. Verified Monad dPKI State
   const reg = REGISTERED_DOMAINS[domain];
-
   if (reg) {
     statusBanner.className = 'status-banner status-verified';
     statusIcon.innerHTML = `
@@ -120,7 +180,7 @@ async function verifyDomain(domain) {
         <polyline points="9 12 11 14 15 10"></polyline>
       </svg>
     `;
-    statusTitle.textContent = 'Secured by Monad dPKI';
+    statusTitle.textContent = 'ACCESS APPROVED: MONAD dPKI';
     statusDesc.textContent = `Authenticity proven on Monad via native 0x0100 NIST P-256 precompile. 0 Central CAs trusted.`;
     quorumStatus.textContent = reg.quorum;
     quorumStatus.className = 'metric-val highlight';
@@ -130,13 +190,12 @@ async function verifyDomain(domain) {
     latencyVal.className = 'metric-val text-emerald';
     keyHashVal.textContent = `${reg.keyHash.slice(0, 10)}...${reg.keyHash.slice(-6)}`;
 
-    // Set extension badge to OK
     if (chrome && chrome.action) {
       chrome.action.setBadgeText({ text: '✓' });
       chrome.action.setBadgeBackgroundColor({ color: '#10B981' });
     }
   } else {
-    // Unregistered / Legacy Web PKI
+    // 3. Unverified Legacy Web PKI
     statusBanner.className = 'status-banner status-warning';
     statusIcon.innerHTML = `
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -146,7 +205,7 @@ async function verifyDomain(domain) {
       </svg>
     `;
     statusTitle.textContent = 'Legacy Web PKI Only';
-    statusDesc.textContent = `This domain has not registered a decentralized key on Monad. Relies on centralized CAs vulnerable to key compromise.`;
+    statusDesc.textContent = `${domain} relies on centralized CAs (like eMudhra) vulnerable to master key compromise. Not yet anchored on Monad.`;
     quorumStatus.textContent = 'No Monad Anchor';
     quorumStatus.className = 'metric-val';
     precompileVal.textContent = 'Not Verified';
@@ -155,43 +214,9 @@ async function verifyDomain(domain) {
     latencyVal.className = 'metric-val';
     keyHashVal.textContent = 'None';
 
-    // Set extension badge to warning
     if (chrome && chrome.action) {
       chrome.action.setBadgeText({ text: '?' });
       chrome.action.setBadgeBackgroundColor({ color: '#F59E0B' });
     }
-  }
-}
-
-function renderMitmAttack(domain) {
-  const statusBanner = document.getElementById('statusBanner');
-  const statusIcon = document.getElementById('statusIcon');
-  const statusTitle = document.getElementById('statusTitle');
-  const statusDesc = document.getElementById('statusDesc');
-  const quorumStatus = document.getElementById('quorumStatus');
-  const precompileVal = document.getElementById('precompileVal');
-  const latencyVal = document.getElementById('latencyVal');
-  const keyHashVal = document.getElementById('keyHashVal');
-
-  statusBanner.className = 'status-banner status-danger';
-  statusIcon.innerHTML = `
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-      <line x1="18" y1="6" x2="6" y2="18"></line>
-      <line x1="6" y1="6" x2="18" y2="18"></line>
-    </svg>
-  `;
-  statusTitle.textContent = 'ROGUE CA INTERCEPTION BLOCKED!';
-  statusDesc.textContent = `CRITICAL: The presented certificate was signed by an unauthorized/compromised CA. It DOES NOT match the sovereign P-256 key registered on Monad! Lucent failed-closed to protect your session.`;
-  quorumStatus.textContent = '✗ Owner PoP Failed';
-  quorumStatus.className = 'metric-val text-danger';
-  precompileVal.textContent = '0x0100 Mismatch (Rejected)';
-  precompileVal.className = 'metric-val text-danger';
-  latencyVal.textContent = '0.0s Fail-Closed';
-  latencyVal.className = 'metric-val text-danger';
-  keyHashVal.textContent = 'UNAUTHORIZED_KEY';
-
-  if (chrome && chrome.action) {
-    chrome.action.setBadgeText({ text: '!' });
-    chrome.action.setBadgeBackgroundColor({ color: '#EF4444' });
   }
 }

@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react'
+import React, { useState } from 'react'
 import {
   CheckCircle2, AlertTriangle, Key, Globe, Cpu,
   Server, ExternalLink, Copy, Check, Lock, ArrowRight, Activity,
@@ -39,7 +39,7 @@ export default function LandingPage({ onLaunchConsole }) {
     {
       title: '5-Node Independent Geographic Attestation',
       tag: 'Step 02',
-      desc: 'Independent validator nodes in Virginia, Frankfurt, Mumbai, Singapore, and São Paulo fetch and verify DNS records over DNSSEC. A minimum 3-of-5 threshold is mandatory.',
+      desc: 'Independent validator nodes in Virginia, Frankfurt, Mumbai, Singapore, and São Paulo fetch and verify DNS records over DNSSEC. Validator quorum threshold consensus is mandatory.',
       codeSnippet: `// Multi-region validator quorum validation\nQuorum: 5/5 responsive (minimum 3 required)\nAttestations: [0x2f8e...4c1, 0x3f8e...13c1, 0x4f8e...22c1]`
     },
     {
@@ -90,7 +90,6 @@ export default function LandingPage({ onLaunchConsole }) {
             <div className="hidden sm:flex items-center gap-2 bg-amber-50/70 border border-amber-200/80 px-3 py-1.5 rounded-lg text-xs font-mono text-amber-900">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
               <span className="font-semibold text-slate-800">Monad Testnet</span>
-              <span className="text-amber-800 bg-amber-100/80 px-1.5 py-0.2 rounded font-bold">#10143</span>
             </div>
             <button
               onClick={onLaunchConsole}
@@ -246,70 +245,62 @@ export default function LandingPage({ onLaunchConsole }) {
       </section>
 
       {/* 2. THE INCIDENT POST-MORTEM & HOW LUCENT SOLVES IT */}
-      <section id="incident" className="py-16 md:py-20 border-b border-slate-200/80 bg-white scroll-mt-16">
+      <section id="incident" className="py-14 md:py-16 border-b border-slate-200/80 bg-white scroll-mt-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
 
-            {/* Left Column: Case Study Narrative (5 cols) */}
+            {/* Left Column: Short Case Summary */}
             <div className="lg:col-span-5">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-50 border border-red-200 text-red-700 text-xs font-mono font-semibold mb-5">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-50 border border-red-200 text-red-700 text-xs font-mono font-semibold mb-4">
                 <AlertTriangle className="w-3.5 h-3.5" />
-                <span>OCTOBER 2026 CASE STUDY</span>
+                <span>CASE STUDY: OCTOBER 2026</span>
               </div>
 
-              <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-950 mb-5 leading-tight">
-                The eMudhra Incident: Why Centralized CAs Failed
+              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-950 mb-4 leading-snug">
+                The eMudhra Incident: Why Centralized CAs Fail
               </h2>
 
-              <p className="text-slate-600 leading-relaxed text-sm sm:text-base mb-4">
-                In October 2026, security researchers disclosed that eight intermediate CA signing keys of eMudhra were generated with predictable, near-zero entropy. The root cause was a flawed pseudo-random number generator used during HSM key ceremonies - an operational error that destroyed cryptographic uniqueness and left private keys mathematically derivable by outside actors.
-              </p>
-              <p className="text-slate-600 leading-relaxed text-sm sm:text-base mb-4">
-                With derived CA keys in hand, attackers could sign authentic, browser-trusted TLS certificates for any domain in the world - Google, Apple, banking portals - without any consent from domain owners. The compromise operated invisibly across <strong className="text-slate-900 font-semibold">18 months and multiple compliance audit cycles</strong> because CA operations are opaque off-chain black boxes with no public, cryptographically verifiable state.
-              </p>
               <p className="text-slate-600 leading-relaxed text-sm sm:text-base">
-                When the incident finally surfaced, standard revocation infrastructure failed to contain the damage. Browsers cache CRL and OCSP responses for up to 48 hours; when responders time out, they fail-open - silently ignoring compromised certificates and leaving users exposed to active man-in-the-middle interception.
+                In October 2026, 8 intermediate CA private keys leaked due to weak randomness, allowing attackers to forge trusted SSL certificates for any domain worldwide for 18 months undetected. Centralized CAs create single points of failure with broken, slow, fail-open revocation.
               </p>
             </div>
 
-            {/* Right Column: How Lucent Solves Each Flaw (7 cols) */}
-            <div className="lg:col-span-7 lg:pl-4">
-              <div className="text-[11px] font-mono font-bold uppercase tracking-widest text-slate-400 mb-6 pb-2 border-b border-slate-100">
+            {/* Right Column: How Lucent Solves It (Punchy, Short 1-Liners) */}
+            <div className="lg:col-span-7 lg:pl-2">
+              <div className="text-[11px] font-mono font-bold uppercase tracking-widest text-slate-400 mb-4 pb-2 border-b border-slate-100">
                 How Lucent Addresses Each Flaw
               </div>
 
-              <div className="space-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {[
                   {
                     flaw: 'Solitary master signing key',
-                    fix: '3-of-5 Threshold Quorum',
-                    body: 'No single entity holds master signing power. Certificate issuance requires cryptographic agreement from at least three of five independent validator nodes distributed across Virginia, Frankfurt, Mumbai, Singapore, and Sao Paulo. Even with two keys stolen, forging a certificate is mathematically impossible.',
+                    fix: 'Validator Quorum Consensus',
+                    body: 'Multi-party threshold consensus replaces solitary keys. No single entity can forge certificates.'
                   },
                   {
-                    flaw: '48-hour CRL propagation and fail-open browsers',
+                    flaw: '48-hour CRL lag & fail-open browsers',
                     fix: '0.8s On-Chain Revocation',
-                    body: 'Revocations are committed as Monad state transitions confirmed in under one second. Client verifiers read live blockchain state and enforce fail-closed logic - a certificate with an on-chain revocation record is rejected immediately, with no caching window for an attacker to exploit.',
+                    body: 'Revocations commit directly to Monad in sub-seconds. Verifiers read live state and fail-closed immediately.'
                   },
                   {
-                    flaw: 'Zero domain-owner cryptographic consent',
+                    flaw: 'Zero domain-owner consent',
                     fix: 'Sovereign Proof-of-Possession',
-                    body: 'Issuance requires a valid NIST P-256 signature from the domain owner, verified on-chain via the Monad native precompile at address 0x0100 for exactly 6,900 gas. No CA can mint a certificate for your domain without a cryptographic proof that you authorized it.',
+                    body: 'Owners sign with their NIST P-256 key, verified on-chain via Monad precompile 0x0100 for 6,900 gas.'
                   },
                   {
-                    flaw: '18 months of silent, unauditable compromise',
+                    flaw: '18 months of silent compromise',
                     fix: 'Public Ledger State',
-                    body: 'Every validator signature, certificate commitment, and key rotation is recorded as immutable Monad state. Any party - auditor, researcher, or end user - can independently verify the full trust chain without relying on a CA\'s self-reported compliance logs.',
-                  },
+                    body: 'Every issuance and key rotation is permanently recorded on Monad for instant public verification.'
+                  }
                 ].map(({ flaw, fix, body }) => (
-                  <div key={flaw} className="flex gap-4 items-start">
-                    <div className="mt-1 w-5 h-5 rounded-full bg-amber-100 border border-amber-300 flex items-center justify-center shrink-0">
-                      <CheckCircle2 className="w-3 h-3 text-amber-700" />
-                    </div>
-                    <div>
-                      <p className="text-xs text-slate-400 font-mono mb-0.5 line-through">{flaw}</p>
-                      <p className="text-sm font-semibold text-slate-900 mb-1">{fix}</p>
-                      <p className="text-sm text-slate-600 leading-relaxed">{body}</p>
-                    </div>
+                  <div key={flaw} className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/70 space-y-1.5">
+                    <p className="text-[11px] text-slate-400 font-mono line-through">{flaw}</p>
+                    <p className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                      {fix}
+                    </p>
+                    <p className="text-xs text-slate-600 leading-relaxed">{body}</p>
                   </div>
                 ))}
               </div>
