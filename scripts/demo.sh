@@ -20,17 +20,22 @@ echo "[Step 2/6] Launching 5-Node Simulated Validator Network..."
 ./scripts/stop_network.sh > /dev/null 2>&1 || true
 ./scripts/simulate_network.sh
 
+BIN_DIR="$DIR/target/release"
+if [ ! -f "$BIN_DIR/monadtrust-cli" ]; then
+    BIN_DIR="$DIR/target/debug"
+fi
+
 echo ""
 echo "[Step 3/6] Generating Sovereign Domain Owner Keypair (demo_owner.key)..."
-./target/debug/monadtrust-cli keygen --output demo_owner.key
+"$BIN_DIR/monadtrust-cli" keygen --output demo_owner.key
 
 echo ""
 echo "[Step 4/6] Generating Deterministic DNS-01 Challenge..."
-./target/debug/monadtrust-cli challenge --domain demo.monadtrust.xyz --key demo_owner.key --nonce 1
+"$BIN_DIR/monadtrust-cli" challenge --domain demo.monadtrust.xyz --key demo_owner.key --nonce 1
 
 echo ""
 echo "[Step 5/6] Requesting 3-of-5 Quorum Signatures across Validator Nodes..."
-./target/debug/monadtrust-cli request-quorum \
+"$BIN_DIR/monadtrust-cli" request-quorum \
     --domain demo.monadtrust.xyz \
     --key demo_owner.key \
     --nonce 1 \
@@ -39,12 +44,12 @@ echo "[Step 5/6] Requesting 3-of-5 Quorum Signatures across Validator Nodes..."
 echo ""
 echo "[Step 6/6] Starting Live Mock Web Server & Performing Anti-Relay Handshake..."
 # Start server on port 3000
-./target/debug/monadtrust-cli serve --port 3000 --key demo_owner.key > "$DIR/logs/website.log" 2>&1 &
+"$BIN_DIR/monadtrust-cli" serve --port 3000 --key demo_owner.key > "$DIR/logs/website.log" 2>&1 &
 WEBSITE_PID=$!
 sleep 1
 
 # Run verifier with live probe
-./target/debug/monadtrust-verifier \
+"$BIN_DIR/monadtrust-verifier" \
     --domain demo.monadtrust.xyz \
     --probe-endpoint "http://127.0.0.1:3000" \
     --subject-key demo_owner.key

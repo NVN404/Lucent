@@ -12,7 +12,11 @@ for i in {0..4}; do
     PORT=$((8001 + i))
     SEED="validator_seed_$i"
     echo "Starting Validator Node #$i on port $PORT (Seed: $SEED)..."
-    "$DIR/target/debug/monadtrust-validator" \
+    BIN="$DIR/target/release/monadtrust-validator"
+    if [ ! -f "$BIN" ]; then
+        BIN="$DIR/target/debug/monadtrust-validator"
+    fi
+    "$BIN" \
         --port "$PORT" \
         --index "$i" \
         --seed "$SEED" \
