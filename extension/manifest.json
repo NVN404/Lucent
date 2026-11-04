@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Lucent dPKI | Monad Trust Verifier",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Cryptographically verifies websites using Monad decentralized PKI (EIP-7951 P-256 precompile 0x0100). Intercepts and blocks rogue CAs fail-closed.",
   "icons": {
     "16": "icons/icon16.png",
@@ -26,7 +26,7 @@
     {
       "matches": ["http://*/*", "https://*/*"],
       "js": ["content.js"],
-      "run_at": "document_start"
+      "run_at": "document_idle"
     }
   ],
   "permissions": [
@@ -36,6 +36,8 @@
   ],
   "host_permissions": [
     "https://testnet-rpc.monad.xyz/*",
+    "https://dns.google/*",
+    "https://cloudflare-dns.com/*",
     "http://*/*",
     "https://*/*"
   ]

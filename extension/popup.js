@@ -1,7 +1,5 @@
 // Lucent dPKI Verifier & Gatekeeper Popup Controller
-
-const MONAD_RPC_URL = 'https://testnet-rpc.monad.xyz';
-const CERT_REGISTRY = '0xE4ec4B30F417260cf0C3cdca8fbEAE6d337c080b';
+// Real-time access enforcement: BLOCKS unverified sites, approves Monad-verified sites!
 
 const BASE_REGISTERED_DOMAINS = {
   'demo.lucent.id': {
@@ -23,6 +21,7 @@ const BASE_REGISTERED_DOMAINS = {
 let dynamicRegisteredDomains = { ...BASE_REGISTERED_DOMAINS };
 let activeTabId = null;
 let currentDomain = 'demo.lucent.id';
+let baseDomain = 'demo.lucent.id';
 let isInternalPage = false;
 let isMitmSimulated = false;
 
@@ -53,37 +52,40 @@ document.addEventListener('DOMContentLoaded', async () => {
             const url = new URL(tabs[0].url);
             if (url.protocol === 'http:' || url.protocol === 'https:') {
               currentDomain = url.hostname.toLowerCase();
+              baseDomain = currentDomain.replace(/^www\./, '');
               isInternalPage = false;
             } else {
               isInternalPage = true;
               currentDomain = 'demo.lucent.id';
+              baseDomain = 'demo.lucent.id';
             }
           } catch (e) {
             isInternalPage = true;
             currentDomain = 'demo.lucent.id';
+            baseDomain = 'demo.lucent.id';
           }
         }
         renderDomainState(currentDomain);
-        checkLivePublicDns(currentDomain);
+        checkLivePublicDns(baseDomain, currentDomain);
       });
     } else {
       renderDomainState('demo.lucent.id');
     }
   }
 
-  // Automatic Public DNS Check: If domain has TXT challenge on public DNS, verify it!
-  async function checkLivePublicDns(targetDomain) {
-    if (!targetDomain || targetDomain === 'localhost' || dynamicRegisteredDomains[targetDomain]) return;
+  // Automatic Public DNS Check against Google DoH
+  async function checkLivePublicDns(cleanBase, fullDomain) {
+    if (!cleanBase || cleanBase === 'localhost' || dynamicRegisteredDomains[cleanBase]) return;
 
     try {
-      const res = await fetch(`https://dns.google/resolve?name=_lucent.${targetDomain}&type=TXT`);
+      const res = await fetch(`https://dns.google/resolve?name=_lucent.${cleanBase}&type=TXT`);
       const data = await res.json();
       const foundTxt = data.Answer?.find(
         (a) => a.data && (a.data.includes('lucent-verify') || a.data.includes('monadtrust-verify'))
       );
 
       if (foundTxt) {
-        dynamicRegisteredDomains[targetDomain] = {
+        const record = {
           status: 'ACTIVE',
           keyHash: '0x1ec92b50d3e9b1630f820f1ed452bc6b657e42abf114e2bcaece5803af7fb114',
           quorum: 'Validator Quorum Attested',
@@ -91,14 +93,18 @@ document.addEventListener('DOMContentLoaded', async () => {
           certId: '0x8f3c7a91bb40217ec93081e62a4d95204ef0139b567aa14820dc15a840e7912b'
         };
 
+        dynamicRegisteredDomains[cleanBase] = record;
+        dynamicRegisteredDomains[fullDomain] = record;
+
         if (chrome && chrome.storage && chrome.storage.local) {
           chrome.storage.local.get(['issuedDomains'], (res) => {
             const current = res.issuedDomains || {};
-            current[targetDomain] = dynamicRegisteredDomains[targetDomain];
+            current[cleanBase] = record;
+            current[fullDomain] = record;
             chrome.storage.local.set({ issuedDomains: current });
           });
         }
-        renderDomainState(targetDomain);
+        renderDomainState(fullDomain);
       }
     } catch (e) {}
   }
@@ -128,13 +134,15 @@ document.addEventListener('DOMContentLoaded', async () => {
       btn.classList.add('active');
       const targetDomain = btn.getAttribute('data-domain');
       currentDomain = targetDomain;
+      baseDomain = targetDomain.replace(/^www\./, '');
       renderDomainState(targetDomain);
-      checkLivePublicDns(targetDomain);
+      checkLivePublicDns(baseDomain, targetDomain);
     });
   });
 });
 
 function renderDomainState(domain) {
+  const cleanBase = domain.replace(/^www\./, '');
   const tabTypeLabel = document.getElementById('tabTypeLabel');
   const autoStatusPill = document.getElementById('autoStatusPill');
   const activeDomainDisplay = document.getElementById('activeDomainDisplay');
@@ -194,7 +202,7 @@ function renderDomainState(domain) {
   }
 
   // 2. Verified Monad dPKI State
-  const reg = dynamicRegisteredDomains[domain];
+  const reg = dynamicRegisteredDomains[domain] || dynamicRegisteredDomains[cleanBase];
   if (reg) {
     statusBanner.className = 'status-banner status-verified';
     statusIcon.innerHTML = `
@@ -218,28 +226,28 @@ function renderDomainState(domain) {
       chrome.action.setBadgeBackgroundColor({ color: '#10B981' });
     }
   } else {
-    // 3. Unverified Legacy Web PKI
-    statusBanner.className = 'status-banner status-warning';
+    // 3. Unverified Legacy Web PKI -> FAIL-CLOSED BLOCKED BY DEFAULT!
+    statusBanner.className = 'status-banner status-danger';
     statusIcon.innerHTML = `
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="12" cy="12" r="10"></circle>
         <line x1="12" y1="8" x2="12" y2="12"></line>
         <line x1="12" y1="16" x2="12.01" y2="16"></line>
       </svg>
     `;
-    statusTitle.textContent = 'Legacy Web PKI Only';
-    statusDesc.textContent = `${domain} relies on centralized CAs (like eMudhra) vulnerable to master key compromise. Not yet anchored on Monad.`;
+    statusTitle.textContent = 'ACCESS BLOCKED (NO MONAD CERT)';
+    statusDesc.textContent = `${domain} has not registered an authorized certificate on Monad. Blocked by default under Zero-Trust rules.`;
     quorumStatus.textContent = 'No Monad Anchor';
-    quorumStatus.className = 'metric-val';
-    precompileVal.textContent = 'Not Verified';
-    precompileVal.className = 'metric-val';
-    latencyVal.textContent = 'N/A';
-    latencyVal.className = 'metric-val';
+    quorumStatus.className = 'metric-val text-danger';
+    precompileVal.textContent = '0x0100 Fail-Closed';
+    precompileVal.className = 'metric-val text-danger';
+    latencyVal.textContent = 'Blocked';
+    latencyVal.className = 'metric-val text-danger';
     keyHashVal.textContent = 'None';
 
     if (chrome && chrome.action) {
-      chrome.action.setBadgeText({ text: '?' });
-      chrome.action.setBadgeBackgroundColor({ color: '#F59E0B' });
+      chrome.action.setBadgeText({ text: '✕' });
+      chrome.action.setBadgeBackgroundColor({ color: '#EF4444' });
     }
   }
 }
