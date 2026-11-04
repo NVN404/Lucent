@@ -1,0 +1,17 @@
+[package]
+name = "monadtrust-verifier"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+monadtrust-common = { path = "../common" }
+clap = { version = "4.4", features = ["derive"] }
+tokio = { version = "1.0", features = ["full"] }
+reqwest = { version = "0.12", features = ["json"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+hex = "0.4"
+p256 = { version = "0.13", features = ["ecdsa", "pkcs8"] }
+rand = "0.8"
+sha2 = "0.10"
+
