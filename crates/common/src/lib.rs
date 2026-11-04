@@ -1,122 +1,18 @@
 use p256::elliptic_curve::sec1::ToEncodedPoint;
-use p256::ecdsa::{signature::hazmat::PrehashSigner, signature::hazmat::PrehashVerifier, Signature, SigningKey, VerifyingKey    #[test]
-    fn print_5_validators() {
-        for i in 0..5 {
-            let seed = format!("validator_seed_{}", i);
-            let hash = sha2::Sha256::digest(seed.as_bytes());
-            let mut seed_bytes = [0u8; 32];
-            seed_bytes.copy_from_slice(&hash);
-            let key = SigningKey::from_slice(&seed_bytes).unwrap();
-            let pk = pubkey_from_signing_key(&key);
-            println!("VAL_{}_QX: 0x{}", i, hex::encode(pk.qx));
-            println!("VAL_{}_QY: 0x{}", i, hex::encode(pk.qy));
-        }
-    }
-};
-use serde::{Deserialize, Serialize    #[test]
-    fn print_5_validators() {
-        for i in 0..5 {
-            let seed = format!("validator_seed_{}", i);
-            let hash = sha2::Sha256::digest(seed.as_bytes());
-            let mut seed_bytes = [0u8; 32];
-            seed_bytes.copy_from_slice(&hash);
-            let key = SigningKey::from_slice(&seed_bytes).unwrap();
-            let pk = pubkey_from_signing_key(&key);
-            println!("VAL_{}_QX: 0x{}", i, hex::encode(pk.qx));
-            println!("VAL_{}_QY: 0x{}", i, hex::encode(pk.qy));
-        }
-    }
-};
-use sha2::{Digest, Sha256    #[test]
-    fn print_5_validators() {
-        for i in 0..5 {
-            let seed = format!("validator_seed_{}", i);
-            let hash = sha2::Sha256::digest(seed.as_bytes());
-            let mut seed_bytes = [0u8; 32];
-            seed_bytes.copy_from_slice(&hash);
-            let key = SigningKey::from_slice(&seed_bytes).unwrap();
-            let pk = pubkey_from_signing_key(&key);
-            println!("VAL_{}_QX: 0x{}", i, hex::encode(pk.qx));
-            println!("VAL_{}_QY: 0x{}", i, hex::encode(pk.qy));
-        }
-    }
-};
+use p256::ecdsa::{signature::hazmat::PrehashSigner, signature::hazmat::PrehashVerifier, Signature, SigningKey, VerifyingKey};
+use serde::{Deserialize, Serialize};
+use sha2::{Digest, Sha256};
 use thiserror::Error;
-use tiny_keccak::{Hasher, Keccak    #[test]
-    fn print_5_validators() {
-        for i in 0..5 {
-            let seed = format!("validator_seed_{}", i);
-            let hash = sha2::Sha256::digest(seed.as_bytes());
-            let mut seed_bytes = [0u8; 32];
-            seed_bytes.copy_from_slice(&hash);
-            let key = SigningKey::from_slice(&seed_bytes).unwrap();
-            let pk = pubkey_from_signing_key(&key);
-            println!("VAL_{}_QX: 0x{}", i, hex::encode(pk.qx));
-            println!("VAL_{}_QY: 0x{}", i, hex::encode(pk.qy));
-        }
-    }
-};
+use tiny_keccak::{Hasher, Keccak};
 
 #[derive(Error, Debug)]
 pub enum CommonError {
-    #[error("Invalid domain format: {0    #[test]
-    fn print_5_validators() {
-        for i in 0..5 {
-            let seed = format!("validator_seed_{}", i);
-            let hash = sha2::Sha256::digest(seed.as_bytes());
-            let mut seed_bytes = [0u8; 32];
-            seed_bytes.copy_from_slice(&hash);
-            let key = SigningKey::from_slice(&seed_bytes).unwrap();
-            let pk = pubkey_from_signing_key(&key);
-            println!("VAL_{}_QX: 0x{}", i, hex::encode(pk.qx));
-            println!("VAL_{}_QY: 0x{}", i, hex::encode(pk.qy));
-        }
-    }
-}")]
+    #[error("Invalid domain format: {0}")]
     InvalidDomain(String),
-    #[error("Cryptographic error: {0    #[test]
-    fn print_5_validators() {
-        for i in 0..5 {
-            let seed = format!("validator_seed_{}", i);
-            let hash = sha2::Sha256::digest(seed.as_bytes());
-            let mut seed_bytes = [0u8; 32];
-            seed_bytes.copy_from_slice(&hash);
-            let key = SigningKey::from_slice(&seed_bytes).unwrap();
-            let pk = pubkey_from_signing_key(&key);
-            println!("VAL_{}_QX: 0x{}", i, hex::encode(pk.qx));
-            println!("VAL_{}_QY: 0x{}", i, hex::encode(pk.qy));
-        }
-    }
-}")]
+    #[error("Cryptographic error: {0}")]
     CryptoError(String),
-    #[error("Hex decode error: {0    #[test]
-    fn print_5_validators() {
-        for i in 0..5 {
-            let seed = format!("validator_seed_{}", i);
-            let hash = sha2::Sha256::digest(seed.as_bytes());
-            let mut seed_bytes = [0u8; 32];
-            seed_bytes.copy_from_slice(&hash);
-            let key = SigningKey::from_slice(&seed_bytes).unwrap();
-            let pk = pubkey_from_signing_key(&key);
-            println!("VAL_{}_QX: 0x{}", i, hex::encode(pk.qx));
-            println!("VAL_{}_QY: 0x{}", i, hex::encode(pk.qy));
-        }
-    }
-}")]
+    #[error("Hex decode error: {0}")]
     HexError(#[from] hex::FromHexError),
-    #[test]
-    fn print_5_validators() {
-        for i in 0..5 {
-            let seed = format!("validator_seed_{}", i);
-            let hash = sha2::Sha256::digest(seed.as_bytes());
-            let mut seed_bytes = [0u8; 32];
-            seed_bytes.copy_from_slice(&hash);
-            let key = SigningKey::from_slice(&seed_bytes).unwrap();
-            let pk = pubkey_from_signing_key(&key);
-            println!("VAL_{}_QX: 0x{}", i, hex::encode(pk.qx));
-            println!("VAL_{}_QY: 0x{}", i, hex::encode(pk.qy));
-        }
-    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -125,19 +21,6 @@ pub struct P256PublicKey {
     pub qx: [u8; 32],
     #[serde(with = "hex_bytes32")]
     pub qy: [u8; 32],
-    #[test]
-    fn print_5_validators() {
-        for i in 0..5 {
-            let seed = format!("validator_seed_{}", i);
-            let hash = sha2::Sha256::digest(seed.as_bytes());
-            let mut seed_bytes = [0u8; 32];
-            seed_bytes.copy_from_slice(&hash);
-            let key = SigningKey::from_slice(&seed_bytes).unwrap();
-            let pk = pubkey_from_signing_key(&key);
-            println!("VAL_{}_QX: 0x{}", i, hex::encode(pk.qx));
-            println!("VAL_{}_QY: 0x{}", i, hex::encode(pk.qy));
-        }
-    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -146,19 +29,6 @@ pub struct P256Signature {
     pub r: [u8; 32],
     #[serde(with = "hex_bytes32")]
     pub s: [u8; 32],
-    #[test]
-    fn print_5_validators() {
-        for i in 0..5 {
-            let seed = format!("validator_seed_{}", i);
-            let hash = sha2::Sha256::digest(seed.as_bytes());
-            let mut seed_bytes = [0u8; 32];
-            seed_bytes.copy_from_slice(&hash);
-            let key = SigningKey::from_slice(&seed_bytes).unwrap();
-            let pk = pubkey_from_signing_key(&key);
-            println!("VAL_{}_QX: 0x{}", i, hex::encode(pk.qx));
-            println!("VAL_{}_QY: 0x{}", i, hex::encode(pk.qy));
-        }
-    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -169,69 +39,17 @@ pub struct IssueRequest {
     pub expires_at: u64,
     pub nonce: u64,
     pub deadline: u64,
-    #[test]
-    fn print_5_validators() {
-        for i in 0..5 {
-            let seed = format!("validator_seed_{}", i);
-            let hash = sha2::Sha256::digest(seed.as_bytes());
-            let mut seed_bytes = [0u8; 32];
-            seed_bytes.copy_from_slice(&hash);
-            let key = SigningKey::from_slice(&seed_bytes).unwrap();
-            let pk = pubkey_from_signing_key(&key);
-            println!("VAL_{}_QX: 0x{}", i, hex::encode(pk.qx));
-            println!("VAL_{}_QY: 0x{}", i, hex::encode(pk.qy));
-        }
-    }
 }
 
 pub mod hex_bytes32 {
-    use serde::{self, Deserializer, Serializer    #[test]
-    fn print_5_validators() {
-        for i in 0..5 {
-            let seed = format!("validator_seed_{}", i);
-            let hash = sha2::Sha256::digest(seed.as_bytes());
-            let mut seed_bytes = [0u8; 32];
-            seed_bytes.copy_from_slice(&hash);
-            let key = SigningKey::from_slice(&seed_bytes).unwrap();
-            let pk = pubkey_from_signing_key(&key);
-            println!("VAL_{}_QX: 0x{}", i, hex::encode(pk.qx));
-            println!("VAL_{}_QY: 0x{}", i, hex::encode(pk.qy));
-        }
-    }
-};
+    use serde::{self, Deserializer, Serializer};
 
     pub fn serialize<S>(bytes: &[u8; 32], serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
     {
-        serializer.serialize_str(&format!("0x{    #[test]
-    fn print_5_validators() {
-        for i in 0..5 {
-            let seed = format!("validator_seed_{}", i);
-            let hash = sha2::Sha256::digest(seed.as_bytes());
-            let mut seed_bytes = [0u8; 32];
-            seed_bytes.copy_from_slice(&hash);
-            let key = SigningKey::from_slice(&seed_bytes).unwrap();
-            let pk = pubkey_from_signing_key(&key);
-            println!("VAL_{}_QX: 0x{}", i, hex::encode(pk.qx));
-            println!("VAL_{}_QY: 0x{}", i, hex::encode(pk.qy));
-        }
+        serializer.serialize_str(&format!("0x{}", hex::encode(bytes)))
     }
-}", hex::encode(bytes)))
-        #[test]
-    fn print_5_validators() {
-        for i in 0..5 {
-            let seed = format!("validator_seed_{}", i);
-            let hash = sha2::Sha256::digest(seed.as_bytes());
-            let mut seed_bytes = [0u8; 32];
-            seed_bytes.copy_from_slice(&hash);
-            let key = SigningKey::from_slice(&seed_bytes).unwrap();
-            let pk = pubkey_from_signing_key(&key);
-            println!("VAL_{}_QX: 0x{}", i, hex::encode(pk.qx));
-            println!("VAL_{}_QY: 0x{}", i, hex::encode(pk.qy));
-        }
-    }
-}
 
     pub fn deserialize<'de, D>(deserializer: D) -> Result<[u8; 32], D::Error>
     where
@@ -242,49 +60,10 @@ pub mod hex_bytes32 {
         let vec = hex::decode(clean).map_err(serde::de::Error::custom)?;
         if vec.len() != 32 {
             return Err(serde::de::Error::custom("expected 32 bytes"));
-            #[test]
-    fn print_5_validators() {
-        for i in 0..5 {
-            let seed = format!("validator_seed_{}", i);
-            let hash = sha2::Sha256::digest(seed.as_bytes());
-            let mut seed_bytes = [0u8; 32];
-            seed_bytes.copy_from_slice(&hash);
-            let key = SigningKey::from_slice(&seed_bytes).unwrap();
-            let pk = pubkey_from_signing_key(&key);
-            println!("VAL_{}_QX: 0x{}", i, hex::encode(pk.qx));
-            println!("VAL_{}_QY: 0x{}", i, hex::encode(pk.qy));
         }
-    }
-}
         let mut arr = [0u8; 32];
         arr.copy_from_slice(&vec);
         Ok(arr)
-        #[test]
-    fn print_5_validators() {
-        for i in 0..5 {
-            let seed = format!("validator_seed_{}", i);
-            let hash = sha2::Sha256::digest(seed.as_bytes());
-            let mut seed_bytes = [0u8; 32];
-            seed_bytes.copy_from_slice(&hash);
-            let key = SigningKey::from_slice(&seed_bytes).unwrap();
-            let pk = pubkey_from_signing_key(&key);
-            println!("VAL_{}_QX: 0x{}", i, hex::encode(pk.qx));
-            println!("VAL_{}_QY: 0x{}", i, hex::encode(pk.qy));
-        }
-    }
-}
-    #[test]
-    fn print_5_validators() {
-        for i in 0..5 {
-            let seed = format!("validator_seed_{}", i);
-            let hash = sha2::Sha256::digest(seed.as_bytes());
-            let mut seed_bytes = [0u8; 32];
-            seed_bytes.copy_from_slice(&hash);
-            let key = SigningKey::from_slice(&seed_bytes).unwrap();
-            let pk = pubkey_from_signing_key(&key);
-            println!("VAL_{}_QX: 0x{}", i, hex::encode(pk.qx));
-            println!("VAL_{}_QY: 0x{}", i, hex::encode(pk.qy));
-        }
     }
 }
 
@@ -293,97 +72,19 @@ pub fn canonicalize_domain(domain: &str) -> Result<String, CommonError> {
     let trimmed = domain.trim();
     if trimmed.is_empty() || trimmed.len() > 253 {
         return Err(CommonError::InvalidDomain("length out of bounds".into()));
-        #[test]
-    fn print_5_validators() {
-        for i in 0..5 {
-            let seed = format!("validator_seed_{}", i);
-            let hash = sha2::Sha256::digest(seed.as_bytes());
-            let mut seed_bytes = [0u8; 32];
-            seed_bytes.copy_from_slice(&hash);
-            let key = SigningKey::from_slice(&seed_bytes).unwrap();
-            let pk = pubkey_from_signing_key(&key);
-            println!("VAL_{}_QX: 0x{}", i, hex::encode(pk.qx));
-            println!("VAL_{}_QY: 0x{}", i, hex::encode(pk.qy));
-        }
     }
-}
     if trimmed.starts_with('.') || trimmed.ends_with('.') {
         return Err(CommonError::InvalidDomain("leading or trailing dot".into()));
-        #[test]
-    fn print_5_validators() {
-        for i in 0..5 {
-            let seed = format!("validator_seed_{}", i);
-            let hash = sha2::Sha256::digest(seed.as_bytes());
-            let mut seed_bytes = [0u8; 32];
-            seed_bytes.copy_from_slice(&hash);
-            let key = SigningKey::from_slice(&seed_bytes).unwrap();
-            let pk = pubkey_from_signing_key(&key);
-            println!("VAL_{}_QX: 0x{}", i, hex::encode(pk.qx));
-            println!("VAL_{}_QY: 0x{}", i, hex::encode(pk.qy));
-        }
     }
-}
     for c in trimmed.chars() {
         if c.is_ascii_uppercase() {
             return Err(CommonError::InvalidDomain("contains uppercase".into()));
-            #[test]
-    fn print_5_validators() {
-        for i in 0..5 {
-            let seed = format!("validator_seed_{}", i);
-            let hash = sha2::Sha256::digest(seed.as_bytes());
-            let mut seed_bytes = [0u8; 32];
-            seed_bytes.copy_from_slice(&hash);
-            let key = SigningKey::from_slice(&seed_bytes).unwrap();
-            let pk = pubkey_from_signing_key(&key);
-            println!("VAL_{}_QX: 0x{}", i, hex::encode(pk.qx));
-            println!("VAL_{}_QY: 0x{}", i, hex::encode(pk.qy));
         }
-    }
-}
         if c.is_whitespace() || c.is_ascii_control() {
             return Err(CommonError::InvalidDomain("contains whitespace or control".into()));
-            #[test]
-    fn print_5_validators() {
-        for i in 0..5 {
-            let seed = format!("validator_seed_{}", i);
-            let hash = sha2::Sha256::digest(seed.as_bytes());
-            let mut seed_bytes = [0u8; 32];
-            seed_bytes.copy_from_slice(&hash);
-            let key = SigningKey::from_slice(&seed_bytes).unwrap();
-            let pk = pubkey_from_signing_key(&key);
-            println!("VAL_{}_QX: 0x{}", i, hex::encode(pk.qx));
-            println!("VAL_{}_QY: 0x{}", i, hex::encode(pk.qy));
         }
     }
-}
-        #[test]
-    fn print_5_validators() {
-        for i in 0..5 {
-            let seed = format!("validator_seed_{}", i);
-            let hash = sha2::Sha256::digest(seed.as_bytes());
-            let mut seed_bytes = [0u8; 32];
-            seed_bytes.copy_from_slice(&hash);
-            let key = SigningKey::from_slice(&seed_bytes).unwrap();
-            let pk = pubkey_from_signing_key(&key);
-            println!("VAL_{}_QX: 0x{}", i, hex::encode(pk.qx));
-            println!("VAL_{}_QY: 0x{}", i, hex::encode(pk.qy));
-        }
-    }
-}
     Ok(trimmed.to_lowercase())
-    #[test]
-    fn print_5_validators() {
-        for i in 0..5 {
-            let seed = format!("validator_seed_{}", i);
-            let hash = sha2::Sha256::digest(seed.as_bytes());
-            let mut seed_bytes = [0u8; 32];
-            seed_bytes.copy_from_slice(&hash);
-            let key = SigningKey::from_slice(&seed_bytes).unwrap();
-            let pk = pubkey_from_signing_key(&key);
-            println!("VAL_{}_QX: 0x{}", i, hex::encode(pk.qx));
-            println!("VAL_{}_QY: 0x{}", i, hex::encode(pk.qy));
-        }
-    }
 }
 
 pub fn keccak256_hash(data: &[u8]) -> [u8; 32] {
@@ -392,19 +93,6 @@ pub fn keccak256_hash(data: &[u8]) -> [u8; 32] {
     hasher.update(data);
     hasher.finalize(&mut output);
     output
-    #[test]
-    fn print_5_validators() {
-        for i in 0..5 {
-            let seed = format!("validator_seed_{}", i);
-            let hash = sha2::Sha256::digest(seed.as_bytes());
-            let mut seed_bytes = [0u8; 32];
-            seed_bytes.copy_from_slice(&hash);
-            let key = SigningKey::from_slice(&seed_bytes).unwrap();
-            let pk = pubkey_from_signing_key(&key);
-            println!("VAL_{}_QX: 0x{}", i, hex::encode(pk.qx));
-            println!("VAL_{}_QY: 0x{}", i, hex::encode(pk.qy));
-        }
-    }
 }
 
 pub fn key_hash(qx: &[u8; 32], qy: &[u8; 32]) -> [u8; 32] {
@@ -412,19 +100,6 @@ pub fn key_hash(qx: &[u8; 32], qy: &[u8; 32]) -> [u8; 32] {
     packed.extend_from_slice(qx);
     packed.extend_from_slice(qy);
     keccak256_hash(&packed)
-    #[test]
-    fn print_5_validators() {
-        for i in 0..5 {
-            let seed = format!("validator_seed_{}", i);
-            let hash = sha2::Sha256::digest(seed.as_bytes());
-            let mut seed_bytes = [0u8; 32];
-            seed_bytes.copy_from_slice(&hash);
-            let key = SigningKey::from_slice(&seed_bytes).unwrap();
-            let pk = pubkey_from_signing_key(&key);
-            println!("VAL_{}_QX: 0x{}", i, hex::encode(pk.qx));
-            println!("VAL_{}_QY: 0x{}", i, hex::encode(pk.qy));
-        }
-    }
 }
 
 /// Computes the exact 32-byte SHA-256 digest signed by validators and domain owner (PoP)
@@ -463,19 +138,6 @@ pub fn compute_issuance_digest(
     let mut out = [0u8; 32];
     out.copy_from_slice(&result);
     out
-    #[test]
-    fn print_5_validators() {
-        for i in 0..5 {
-            let seed = format!("validator_seed_{}", i);
-            let hash = sha2::Sha256::digest(seed.as_bytes());
-            let mut seed_bytes = [0u8; 32];
-            seed_bytes.copy_from_slice(&hash);
-            let key = SigningKey::from_slice(&seed_bytes).unwrap();
-            let pk = pubkey_from_signing_key(&key);
-            println!("VAL_{}_QX: 0x{}", i, hex::encode(pk.qx));
-            println!("VAL_{}_QY: 0x{}", i, hex::encode(pk.qy));
-        }
-    }
 }
 
 /// Computes the deterministic DNS challenge string:
@@ -496,33 +158,7 @@ pub fn compute_dns_challenge_value(
     let mut hasher = Sha256::new();
     hasher.update(&packed);
     let hash = hasher.finalize();
-    format!("monadtrust-verify={    #[test]
-    fn print_5_validators() {
-        for i in 0..5 {
-            let seed = format!("validator_seed_{}", i);
-            let hash = sha2::Sha256::digest(seed.as_bytes());
-            let mut seed_bytes = [0u8; 32];
-            seed_bytes.copy_from_slice(&hash);
-            let key = SigningKey::from_slice(&seed_bytes).unwrap();
-            let pk = pubkey_from_signing_key(&key);
-            println!("VAL_{}_QX: 0x{}", i, hex::encode(pk.qx));
-            println!("VAL_{}_QY: 0x{}", i, hex::encode(pk.qy));
-        }
-    }
-}", hex::encode(hash))
-    #[test]
-    fn print_5_validators() {
-        for i in 0..5 {
-            let seed = format!("validator_seed_{}", i);
-            let hash = sha2::Sha256::digest(seed.as_bytes());
-            let mut seed_bytes = [0u8; 32];
-            seed_bytes.copy_from_slice(&hash);
-            let key = SigningKey::from_slice(&seed_bytes).unwrap();
-            let pk = pubkey_from_signing_key(&key);
-            println!("VAL_{}_QX: 0x{}", i, hex::encode(pk.qx));
-            println!("VAL_{}_QY: 0x{}", i, hex::encode(pk.qy));
-        }
-    }
+    format!("monadtrust-verify={}", hex::encode(hash))
 }
 
 /// Computes the live web server TLS connection handshake digest:
@@ -543,39 +179,13 @@ pub fn compute_handshake_digest(
     let mut out = [0u8; 32];
     out.copy_from_slice(&hasher.finalize());
     out
-    #[test]
-    fn print_5_validators() {
-        for i in 0..5 {
-            let seed = format!("validator_seed_{}", i);
-            let hash = sha2::Sha256::digest(seed.as_bytes());
-            let mut seed_bytes = [0u8; 32];
-            seed_bytes.copy_from_slice(&hash);
-            let key = SigningKey::from_slice(&seed_bytes).unwrap();
-            let pk = pubkey_from_signing_key(&key);
-            println!("VAL_{}_QX: 0x{}", i, hex::encode(pk.qx));
-            println!("VAL_{}_QY: 0x{}", i, hex::encode(pk.qy));
-        }
-    }
 }
 
 /// Pre-hashed P-256 signing (avoids double hashing the 32-byte digest)
 pub fn sign_prehash(signing_key: &SigningKey, digest: &[u8; 32]) -> Result<P256Signature, CommonError> {
     let (signature, _) = signing_key
         .sign_prehash(digest)
-        .map_err(|e| CommonError::CryptoError(format!("Signing failed: {    #[test]
-    fn print_5_validators() {
-        for i in 0..5 {
-            let seed = format!("validator_seed_{}", i);
-            let hash = sha2::Sha256::digest(seed.as_bytes());
-            let mut seed_bytes = [0u8; 32];
-            seed_bytes.copy_from_slice(&hash);
-            let key = SigningKey::from_slice(&seed_bytes).unwrap();
-            let pk = pubkey_from_signing_key(&key);
-            println!("VAL_{}_QX: 0x{}", i, hex::encode(pk.qx));
-            println!("VAL_{}_QY: 0x{}", i, hex::encode(pk.qy));
-        }
-    }
-}", e)))?;
+        .map_err(|e| CommonError::CryptoError(format!("Signing failed: {}", e)))?;
 
     // Normalize to low-s
     let normalized = signature.normalize_s().unwrap_or(signature);
@@ -587,33 +197,7 @@ pub fn sign_prehash(signing_key: &SigningKey, digest: &[u8; 32]) -> Result<P256S
     r.copy_from_slice(&r_bytes);
     s.copy_from_slice(&s_bytes);
 
-    Ok(P256Signature { r, s     #[test]
-    fn print_5_validators() {
-        for i in 0..5 {
-            let seed = format!("validator_seed_{}", i);
-            let hash = sha2::Sha256::digest(seed.as_bytes());
-            let mut seed_bytes = [0u8; 32];
-            seed_bytes.copy_from_slice(&hash);
-            let key = SigningKey::from_slice(&seed_bytes).unwrap();
-            let pk = pubkey_from_signing_key(&key);
-            println!("VAL_{}_QX: 0x{}", i, hex::encode(pk.qx));
-            println!("VAL_{}_QY: 0x{}", i, hex::encode(pk.qy));
-        }
-    }
-})
-    #[test]
-    fn print_5_validators() {
-        for i in 0..5 {
-            let seed = format!("validator_seed_{}", i);
-            let hash = sha2::Sha256::digest(seed.as_bytes());
-            let mut seed_bytes = [0u8; 32];
-            seed_bytes.copy_from_slice(&hash);
-            let key = SigningKey::from_slice(&seed_bytes).unwrap();
-            let pk = pubkey_from_signing_key(&key);
-            println!("VAL_{}_QX: 0x{}", i, hex::encode(pk.qx));
-            println!("VAL_{}_QY: 0x{}", i, hex::encode(pk.qy));
-        }
-    }
+    Ok(P256Signature { r, s })
 }
 
 /// Pre-hashed P-256 verification
@@ -629,51 +213,12 @@ pub fn verify_prehash(
     sec1.extend_from_slice(&pubkey.qy);
 
     let verifying_key = VerifyingKey::from_sec1_bytes(&sec1)
-        .map_err(|e| CommonError::CryptoError(format!("Invalid public key coordinates: {    #[test]
-    fn print_5_validators() {
-        for i in 0..5 {
-            let seed = format!("validator_seed_{}", i);
-            let hash = sha2::Sha256::digest(seed.as_bytes());
-            let mut seed_bytes = [0u8; 32];
-            seed_bytes.copy_from_slice(&hash);
-            let key = SigningKey::from_slice(&seed_bytes).unwrap();
-            let pk = pubkey_from_signing_key(&key);
-            println!("VAL_{}_QX: 0x{}", i, hex::encode(pk.qx));
-            println!("VAL_{}_QY: 0x{}", i, hex::encode(pk.qy));
-        }
-    }
-}", e)))?;
+        .map_err(|e| CommonError::CryptoError(format!("Invalid public key coordinates: {}", e)))?;
 
     let signature = Signature::from_scalars(sig.r, sig.s)
-        .map_err(|e| CommonError::CryptoError(format!("Invalid signature scalars: {    #[test]
-    fn print_5_validators() {
-        for i in 0..5 {
-            let seed = format!("validator_seed_{}", i);
-            let hash = sha2::Sha256::digest(seed.as_bytes());
-            let mut seed_bytes = [0u8; 32];
-            seed_bytes.copy_from_slice(&hash);
-            let key = SigningKey::from_slice(&seed_bytes).unwrap();
-            let pk = pubkey_from_signing_key(&key);
-            println!("VAL_{}_QX: 0x{}", i, hex::encode(pk.qx));
-            println!("VAL_{}_QY: 0x{}", i, hex::encode(pk.qy));
-        }
-    }
-}", e)))?;
+        .map_err(|e| CommonError::CryptoError(format!("Invalid signature scalars: {}", e)))?;
 
     Ok(verifying_key.verify_prehash(digest, &signature).is_ok())
-    #[test]
-    fn print_5_validators() {
-        for i in 0..5 {
-            let seed = format!("validator_seed_{}", i);
-            let hash = sha2::Sha256::digest(seed.as_bytes());
-            let mut seed_bytes = [0u8; 32];
-            seed_bytes.copy_from_slice(&hash);
-            let key = SigningKey::from_slice(&seed_bytes).unwrap();
-            let pk = pubkey_from_signing_key(&key);
-            println!("VAL_{}_QX: 0x{}", i, hex::encode(pk.qx));
-            println!("VAL_{}_QY: 0x{}", i, hex::encode(pk.qy));
-        }
-    }
 }
 
 pub fn pubkey_from_signing_key(signing_key: &SigningKey) -> P256PublicKey {
@@ -683,31 +228,30 @@ pub fn pubkey_from_signing_key(signing_key: &SigningKey) -> P256PublicKey {
     let mut qy = [0u8; 32];
     qx.copy_from_slice(encoded.x().unwrap());
     qy.copy_from_slice(encoded.y().unwrap());
-    P256PublicKey { qx, qy     #[test]
-    fn print_5_validators() {
-        for i in 0..5 {
-            let seed = format!("validator_seed_{}", i);
-            let hash = sha2::Sha256::digest(seed.as_bytes());
-            let mut seed_bytes = [0u8; 32];
-            seed_bytes.copy_from_slice(&hash);
-            let key = SigningKey::from_slice(&seed_bytes).unwrap();
-            let pk = pubkey_from_signing_key(&key);
-            println!("VAL_{}_QX: 0x{}", i, hex::encode(pk.qx));
-            println!("VAL_{}_QY: 0x{}", i, hex::encode(pk.qy));
-        }
-    }
+    P256PublicKey { qx, qy }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
     #[test]
-    fn print_5_validators() {
-        for i in 0..5 {
-            let seed = format!("validator_seed_{}", i);
-            let hash = sha2::Sha256::digest(seed.as_bytes());
-            let mut seed_bytes = [0u8; 32];
-            seed_bytes.copy_from_slice(&hash);
-            let key = SigningKey::from_slice(&seed_bytes).unwrap();
-            let pk = pubkey_from_signing_key(&key);
-            println!("VAL_{}_QX: 0x{}", i, hex::encode(pk.qx));
-            println!("VAL_{}_QY: 0x{}", i, hex::encode(pk.qy));
-        }
+    fn test_canonicalize_domain() {
+        assert_eq!(canonicalize_domain("example.com").unwrap(), "example.com");
+        assert!(canonicalize_domain("EXAMPLE.COM").is_err());
+        assert!(canonicalize_domain("example.com.").is_err());
+        assert!(canonicalize_domain(".example.com").is_err());
+        assert!(canonicalize_domain("exam ple.com").is_err());
+    }
+
+    #[test]
+    fn test_prehash_sign_verify() {
+        let key = SigningKey::from_slice(&[42u8; 32]).expect("key creation");
+        let pk = pubkey_from_signing_key(&key);
+        let digest = [7u8; 32];
+
+        let sig = sign_prehash(&key, &digest).expect("sign failed");
+        let valid = verify_prehash(&pk, &digest, &sig).expect("verify failed");
+        assert!(valid);
     }
 }
