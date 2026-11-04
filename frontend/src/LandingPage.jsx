@@ -156,7 +156,7 @@ export default function LandingPage({ onLaunchConsole }) {
                   <div className="text-xs text-slate-500 mt-0.5">Precompile Gas Cost</div>
                 </div>
                 <div>
-                  <div className="text-2xl font-bold font-mono text-amber-700">3-of-5</div>
+                  <div className="text-2xl font-bold font-mono text-amber-700">5 Nodes</div>
                   <div className="text-xs text-slate-500 mt-0.5">Validator Quorum</div>
                 </div>
                 <div>
@@ -465,7 +465,7 @@ export default function LandingPage({ onLaunchConsole }) {
                   <Network className="w-5 h-5" />
                 </div>
                 <h3 className="text-xl font-bold text-slate-950 mb-2">
-                  3-of-5 Independent Validator Quorum
+                  Independent Validator Quorum Mesh
                 </h3>
                 <p className="text-sm text-slate-600 leading-relaxed mb-4">
                   Domain verification is distributed across five geographically isolated validator daemons. A certificate request is signed and finalized on Monad only when at least 3 distinct nodes submit cryptographic proofs.

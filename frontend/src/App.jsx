@@ -272,7 +272,7 @@ export default function App() {
     },
     {
       num: 6,
-      name: '3-of-5 Decentralized Validator Quorum',
+      name: 'Decentralized Validator Quorum',
       status: inspectMode === 'quorum_fail' ? 'fail' : (quorumCount >= 3 ? 'pass' : 'warn'),
       desc: inspectMode === 'quorum_fail'
         ? 'Insufficient validator approvals: 1/5 attested (minimum 3 required).'
@@ -599,7 +599,7 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Step 2: Decentralized Validator Quorum (3-of-5) */}
+              {/* Step 2: Decentralized Validator Quorum */}
               <div className="lg:col-span-6 bg-white border border-slate-200 rounded-2xl p-6 shadow-card space-y-4">
                 <div className="flex items-center justify-between pb-3 border-b border-slate-100">
                   <div className="flex items-center gap-2.5">
@@ -607,7 +607,7 @@ export default function App() {
                       02
                     </div>
                     <div>
-                      <h3 className="font-bold text-slate-900 text-sm">3-of-5 Validator Quorum Mesh</h3>
+                      <h3 className="font-bold text-slate-900 text-sm">Validator Quorum</h3>
                       <p className="text-xs text-slate-500">Independent geographic verification</p>
                     </div>
                   </div>
@@ -693,7 +693,7 @@ export default function App() {
                         ? 'Executing Precompile Staticcalls...'
                         : onChainCert
                         ? 'Certificate Issued On-Chain'
-                        : 'Mint Certificate On-Chain'}
+                        : 'Issue Certificate On-Chain'}
                     </span>
                   </button>
                 </div>
@@ -759,7 +759,7 @@ export default function App() {
                 </div>
               ) : (
                 <div className="bg-slate-50 border border-slate-200/60 rounded-xl p-6 text-center text-xs text-slate-500">
-                  Awaiting 3-of-5 validator quorum signatures before submitting on-chain issuance transaction.
+                  Awaiting validator quorum signatures before submitting on-chain issuance transaction.
                 </div>
               )}
             </div>
