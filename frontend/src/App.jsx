@@ -19,7 +19,10 @@ export default function App() {
     return typeof window !== 'undefined' && window.location.hash === '#/app' ? 'app' : 'landing'
   })
   const [activeTab, setActiveTab] = useState('dashboard') // 'dashboard' | 'inspector' | 'validators' | 'emudhra'
-  const [domain, setDomain] = useState('demo.lucent.id')
+  const [domain, setDomain] = useState('dotlab.studio')
+  const [dnsMode, setDnsMode] = useState('strict') // 'strict' | 'demo'
+  const [dnsCheckStatus, setDnsCheckStatus] = useState(null) // null | 'checking' | 'error' | 'success'
+  const [dnsErrorMessage, setDnsErrorMessage] = useState('')
   const [copiedKey, setCopiedKey] = useState(false)
   const [copiedChallenge, setCopiedChallenge] = useState(false)
 
@@ -116,10 +119,55 @@ export default function App() {
     addLog(`[KEYGEN] Generated fresh P-256 curve keypair for ${domain}`)
   }
 
-  const triggerQuorum = () => {
+  // Public DNS Ownership Verification (Strict Mode)
+  const verifyDnsOwnership = async () => {
+    if (dnsMode === 'demo') {
+      setDnsCheckStatus('success')
+      setDnsErrorMessage('')
+      return true
+    }
+
+    setDnsCheckStatus('checking')
+    addLog(`[DNS-01] Querying global DNS-over-HTTPS (Cloudflare 1.1.1.1) for _lucent.${domain}...`)
+
+    try {
+      const res = await fetch(`https://cloudflare-dns.com/dns-query?name=_lucent.${domain}&type=TXT`, {
+        headers: { accept: 'application/dns-json' }
+      })
+      const data = await res.json()
+      const foundTxt = data.Answer?.find(
+        (a) => a.data && (a.data.includes('lucent-verify') || a.data.includes('monadtrust-verify'))
+      )
+
+      if (foundTxt) {
+        setDnsCheckStatus('success')
+        setDnsErrorMessage('')
+        addLog(`✓ DNS Verified: Found valid TXT challenge record for _lucent.${domain} on Cloudflare 1.1.1.1!`)
+        return true
+      } else {
+        setDnsCheckStatus('error')
+        const err = `Domain Ownership Verification Failed: TXT record '_lucent.${domain}' not found on public DNS! Only the verified owner of '${domain}' who configures this DNS TXT record can generate certificates.`
+        setDnsErrorMessage(err)
+        addLog(`✗ REJECTED: ${err}`)
+        return false
+      }
+    } catch {
+      setDnsCheckStatus('error')
+      const err = 'Public DNS lookup failed. Please check your domain name format.'
+      setDnsErrorMessage(err)
+      return false
+    }
+  }
+
+  const triggerQuorum = async () => {
+    const ok = await verifyDnsOwnership()
+    if (!ok && dnsMode === 'strict') {
+      return
+    }
+
     setIsQuorumRequesting(true)
     setQuorumCount(0)
-    addLog(`[DNS-01] Dispatching challenge query to 5 independent validator nodes...`)
+    addLog(`[DNS-01] Domain ownership confirmed! Dispatching challenge query to 5 independent validator nodes...`)
 
     validators.forEach((v, idx) => {
       setTimeout(() => {
@@ -159,14 +207,14 @@ export default function App() {
         issuedAt: Math.floor(Date.now() / 1000),
         expiresAt: Math.floor(Date.now() / 1000) + 90 * 86400,
         nonce: 1,
-        blockNumber: 76865012,
-        txHash: '0x3a99bb8f1027c8133efb1c7429d8a56209b5581177dcab091873ea8901bce704',
+        blockNumber: 76869230,
+        txHash: '0x7b477f7f68534308071af997ab0b545c2fbede2fbe9a14f9ec564b844fe2b941',
         gasUsed: 27600
       }
       setOnChainCert(certData)
       setIsIssuing(false)
       triggerConfetti()
-      addLog(`[BLOCK] Monad Block #76865012 finalized in 0.8s!`)
+      addLog(`[BLOCK] Monad Block #76869230 confirmed on Monad Testnet!`)
       addLog(`[STATUS] Certificate status: ACTIVE & TRUSTED on CertRegistry.`)
     }, 1100)
   }
@@ -331,13 +379,8 @@ export default function App() {
             </button>
           </nav>
 
-          {/* Telemetry and MonadScan link */}
+          {/* MonadScan link */}
           <div className="flex items-center gap-2 text-xs font-mono">
-            <div className="hidden sm:flex items-center gap-2 bg-amber-50/70 border border-amber-200/80 px-3 py-1.5 rounded-lg text-amber-900">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="font-semibold text-slate-800">Monad Testnet</span>
-              <span className="text-amber-800 bg-amber-100/80 px-1.5 py-0.2 rounded font-bold">#10143</span>
-            </div>
             <a
               href={`https://testnet.monadscan.com/address/${CERT_REGISTRY_ADDR}`}
               target="_blank"
@@ -397,46 +440,6 @@ export default function App() {
           </button>
         </div>
 
-        {/* Sleek Hero Header */}
-        <section className="bg-white border border-amber-200/80 rounded-2xl p-6 sm:p-8 shadow-card relative overflow-hidden bg-gradient-to-b from-[#FFFDF5] to-white">
-          <div className="max-w-3xl space-y-3">
-            <div className="inline-flex items-center gap-2 bg-amber-50 border border-amber-200 px-3 py-1 rounded-full text-xs font-mono text-amber-900 font-semibold">
-              <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-              <span>Decentralized PKI Architecture on Monad</span>
-            </div>
-            <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-slate-950 leading-tight">
-              Eliminating CA Master Signing Keys with Native Monad P-256 (`0x0100`)
-            </h1>
-            <p className="text-sm sm:text-base text-slate-600 leading-relaxed font-normal">
-              Traditional Web PKI concentrates global trust in centralized CAs whose private keys can be compromised (such as the October 2026 eMudhra incident). Lucent replaces single CA master keys with a <strong>3-of-5 decentralized validator quorum</strong> verified on-chain via Monad's <strong>`0x0100` precompile</strong> in 0.8 seconds.
-            </p>
-          </div>
-
-          {/* Quick Stat Tiles */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6 pt-6 border-t border-slate-100 text-xs font-mono">
-            <div className="bg-slate-50 border border-slate-200/80 p-3 rounded-xl">
-              <div className="text-slate-500 text-[11px] mb-0.5">Quorum Consensus</div>
-              <div className="text-slate-900 font-bold text-sm">3-of-5 Nodes</div>
-              <div className="text-[10px] text-emerald-600 mt-1">Multi-signature mesh</div>
-            </div>
-            <div className="bg-slate-50 border border-slate-200/80 p-3 rounded-xl">
-              <div className="text-slate-500 text-[11px] mb-0.5">Precompile Address</div>
-              <div className="text-amber-800 font-bold text-sm">0x0100 (EIP-7951)</div>
-              <div className="text-[10px] text-amber-700 mt-1">NIST P-256 native</div>
-            </div>
-            <div className="bg-slate-50 border border-slate-200/80 p-3 rounded-xl">
-              <div className="text-slate-500 text-[11px] mb-0.5">Gas Consumption</div>
-              <div className="text-slate-900 font-bold text-sm">6,900 Gas / check</div>
-              <div className="text-[10px] text-emerald-600 mt-1">98% cheaper than ETH</div>
-            </div>
-            <div className="bg-slate-50 border border-slate-200/80 p-3 rounded-xl">
-              <div className="text-slate-500 text-[11px] mb-0.5">Revocation Finality</div>
-              <div className="text-slate-900 font-bold text-sm">0.8s Block Time</div>
-              <div className="text-[10px] text-sky-600 mt-1">Fail-Closed on-chain</div>
-            </div>
-          </div>
-        </section>
-
         {/* TAB 1: ISSUANCE WORKFLOW CONSOLE */}
         {activeTab === 'dashboard' && (
           <div className="space-y-6">
@@ -462,17 +465,84 @@ export default function App() {
                   </button>
                 </div>
 
-                {/* Target Domain Input */}
+                {/* Target Domain Input & Mode Selector */}
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-700">Target Web Domain</label>
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-semibold text-slate-700">Target Web Domain</label>
+                    <div className="flex items-center gap-1 bg-slate-100 p-0.5 rounded-lg border border-slate-200">
+                      <button
+                        onClick={() => { setDnsMode('strict'); setDnsCheckStatus(null); setDnsErrorMessage(''); }}
+                        className={`px-2 py-0.5 text-[10px] rounded transition cursor-pointer font-medium ${
+                          dnsMode === 'strict'
+                            ? 'bg-amber-400 text-slate-950 font-bold shadow-xs'
+                            : 'text-slate-600 hover:text-slate-950'
+                        }`}
+                      >
+                        Strict DNS (Public)
+                      </button>
+                      <button
+                        onClick={() => { setDnsMode('demo'); setDnsCheckStatus(null); setDnsErrorMessage(''); }}
+                        className={`px-2 py-0.5 text-[10px] rounded transition cursor-pointer font-medium ${
+                          dnsMode === 'demo'
+                            ? 'bg-amber-400 text-slate-950 font-bold shadow-xs'
+                            : 'text-slate-600 hover:text-slate-950'
+                        }`}
+                      >
+                        Demo Sandbox
+                      </button>
+                    </div>
+                  </div>
+
                   <div className="flex gap-2">
                     <input
                       type="text"
                       value={domain}
-                      onChange={(e) => setDomain(e.target.value)}
+                      onChange={(e) => {
+                        setDomain(e.target.value.toLowerCase().trim())
+                        setDnsCheckStatus(null)
+                        setDnsErrorMessage('')
+                      }}
+                      placeholder="e.g. dotlab.studio"
                       className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-400/40 focus:border-amber-400"
                     />
                   </div>
+
+                  {/* Strict Mode Notice */}
+                  {dnsMode === 'strict' ? (
+                    <p className="text-[11px] text-amber-700 flex items-center gap-1 mt-1 font-mono">
+                      <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+                      <span>Strict Verification: Only verified owners with public DNS TXT record can issue!</span>
+                    </p>
+                  ) : (
+                    <p className="text-[11px] text-emerald-700 flex items-center gap-1 mt-1 font-mono">
+                      <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                      <span>Demo Sandbox Active: Instant verification & on-chain issuance enabled for '{domain}'.</span>
+                    </p>
+                  )}
+
+                  {/* DNS Failure Error Box */}
+                  {dnsCheckStatus === 'error' && (
+                    <div className="mt-2.5 p-3.5 bg-red-50 border border-red-200 rounded-xl text-xs font-mono text-red-900 space-y-2.5">
+                      <div className="flex items-start gap-2">
+                        <XCircle className="w-4 h-4 shrink-0 text-red-600 mt-0.5" />
+                        <div>
+                          <strong className="block text-red-700">Domain Ownership Verification Failed!</strong>
+                          <span className="text-[11px] text-red-800 leading-relaxed block mt-0.5">{dnsErrorMessage}</span>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => {
+                          setDnsMode('demo')
+                          setDnsCheckStatus('success')
+                          setDnsErrorMessage('')
+                          triggerQuorum()
+                        }}
+                        className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 px-3 rounded-lg text-xs transition flex items-center justify-center gap-1.5 shadow-sm cursor-pointer"
+                      >
+                        ⚡ Bypass DNS Check & Issue '{domain}' on Monad Now
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 {/* P-256 Coordinates Display */}
