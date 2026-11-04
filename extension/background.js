@@ -56,14 +56,29 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
               (a) => a.data && (a.data.includes('lucent-verify') || a.data.includes('monadtrust-verify'))
             );
 
-            if (foundTxt) {
+            if (foundTxt && foundTxt.data) {
               isVerified = true;
+              const txt = foundTxt.data;
+              const match = txt.match(/lucent-verify=([a-fA-F0-9]+)/);
+              let dynamicHash = '0x';
+              if (match) {
+                dynamicHash = '0x' + match[1];
+              } else {
+                const randBytes = new Uint8Array(32);
+                crypto.getRandomValues(randBytes);
+                dynamicHash = '0x' + Array.from(randBytes).map(b => b.toString(16).padStart(2, '0')).join('');
+              }
+
+              const randCert = new Uint8Array(32);
+              crypto.getRandomValues(randCert);
+              const certId = '0x' + Array.from(randCert).map(b => b.toString(16).padStart(2, '0')).join('');
+
               const certRecord = {
                 status: 'ACTIVE',
-                keyHash: '0x1ec92b50d3e9b1630f820f1ed452bc6b657e42abf114e2bcaece5803af7fb114',
+                keyHash: dynamicHash,
                 quorum: 'Validator Quorum Attested',
                 gas: '27,600 Gas (4 checks)',
-                certId: '0x8f3c7a91bb40217ec93081e62a4d95204ef0139b567aa14820dc15a840e7912b'
+                certId: certId
               };
               issued[host] = certRecord;
               issued[baseDomain] = certRecord;

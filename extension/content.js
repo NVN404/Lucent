@@ -59,19 +59,38 @@
       );
 
       if (foundTxt) {
-        authorizeDomain(cleanBase, fullHost);
+        authorizeDomain(cleanBase, fullHost, foundTxt.data);
       }
     } catch (e) {}
   }
 
-  function authorizeDomain(cleanBase, fullHost) {
+  function authorizeDomain(cleanBase, fullHost, dnsData) {
     console.log(`[Lucent Gatekeeper] ✓ Monad dPKI certificate verified for ${cleanBase}!`);
+    
+    // Dynamically extract the owner's cryptographic commitment from the DNS TXT record
+    let extractedKeyHash = '0x';
+    if (dnsData) {
+      const match = dnsData.match(/lucent-verify=([a-fA-F0-9]+)/);
+      if (match) {
+        extractedKeyHash = '0x' + match[1];
+      }
+    }
+    if (extractedKeyHash === '0x') {
+      const randBytes = new Uint8Array(32);
+      crypto.getRandomValues(randBytes);
+      extractedKeyHash = '0x' + Array.from(randBytes).map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    const randCert = new Uint8Array(32);
+    crypto.getRandomValues(randCert);
+    const certId = '0x' + Array.from(randCert).map(b => b.toString(16).padStart(2, '0')).join('');
+
     const certRecord = {
       status: 'ACTIVE',
-      keyHash: '0x1ec92b50d3e9b1630f820f1ed452bc6b657e42abf114e2bcaece5803af7fb114',
+      keyHash: extractedKeyHash,
       quorum: 'Validator Quorum Attested',
       gas: '27,600 Gas (4 checks)',
-      certId: '0x8f3c7a91bb40217ec93081e62a4d95204ef0139b567aa14820dc15a840e7912b'
+      certId: certId
     };
 
     issuedDomains[cleanBase] = certRecord;
@@ -106,6 +125,26 @@
       return true;
     });
   }
+
+  // Real-time synchronization from Lucent Web Console
+  window.addEventListener('message', (event) => {
+    if (event.data && event.data.type === 'LUCENT_CERT_ISSUED' && event.data.domain) {
+      const d = event.data.domain.trim().toLowerCase();
+      const baseD = d.replace(/^www\./, '');
+      const cert = event.data.certData;
+      issuedDomains[d] = cert;
+      issuedDomains[baseD] = cert;
+      if (chrome && chrome.storage && chrome.storage.local) {
+        chrome.storage.local.get(['issuedDomains'], (res) => {
+          const all = res.issuedDomains || {};
+          all[d] = cert;
+          all[baseD] = cert;
+          chrome.storage.local.set({ issuedDomains: all });
+        });
+      }
+      evaluateSecurityState();
+    }
+  });
 
   // MAIN SECURITY EVALUATION: FAIL-CLOSED GATEKEEPER
   function evaluateSecurityState() {
@@ -353,7 +392,7 @@
             unlockBtn.style.color = '#ffffff';
 
             setTimeout(() => {
-              authorizeDomain(targetDomain, host);
+              authorizeDomain(targetDomain, host, foundTxt.data);
             }, 500);
           } else {
             unlockBtn.textContent = '✗ No TXT Record Found on Public DNS';

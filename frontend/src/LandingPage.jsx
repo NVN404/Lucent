@@ -34,7 +34,7 @@ export default function LandingPage({ onLaunchConsole }) {
       title: 'Domain Ownership & P-256 Curve Bind',
       tag: 'Step 01',
       desc: 'Website operators generate an elliptic curve NIST P-256 keypair. The public key is bound to the target domain through a cryptographically signed DNS-01 TXT record challenge.',
-      codeSnippet: `// Domain-bound challenge record\n_acme-challenge.example.com IN TXT "lucent-verify=0x1ec92b50d3...7d43919d"`
+      codeSnippet: `// Domain-bound challenge record\n_lucent.example.com IN TXT "lucent-verify=<sha256_p256_commitment_hash>"`
     },
     {
       title: '5-Node Independent Geographic Attestation',
