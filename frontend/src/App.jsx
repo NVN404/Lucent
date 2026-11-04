@@ -260,23 +260,11 @@ export default function App() {
           </div>
         </div>
 
-        {/* Network & Node Telemetry Badge */}
-        <div className="flex flex-wrap items-center gap-2 text-xs font-mono">
+        {/* Network Badge */}
+        <div className="flex items-center gap-2 text-xs font-mono">
           <div className="flex items-center gap-2 bg-monad-card border border-monad-border px-3 py-1.5 rounded-lg">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span className="text-slate-300">Monad Testnet #10143</span>
-          </div>
-          <div className="flex items-center gap-2 bg-monad-card border border-monad-border px-3 py-1.5 rounded-lg text-slate-300">
-            <HardDrive className="w-3.5 h-3.5 text-blue-400" />
-            <span>RAM: <strong className="text-emerald-400">7.3 MB/node</strong></span>
-          </div>
-          <div className="flex items-center gap-2 bg-monad-card border border-monad-border px-3 py-1.5 rounded-lg">
-            <Cpu className="w-3.5 h-3.5 text-[#836EF9]" />
-            <span className="text-[#836EF9]">0x0100 (6,900 gas)</span>
-          </div>
-          <div className="flex items-center gap-2 bg-monad-card border border-monad-border px-3 py-1.5 rounded-lg">
-            <Shield className="w-3.5 h-3.5 text-pink-400" />
-            <span className="text-slate-300">Quorum: 3-of-5</span>
+            <span className="text-slate-300">Monad Testnet (Chain ID 10143)</span>
           </div>
         </div>
       </header>
@@ -571,36 +559,6 @@ export default function App() {
 
         {/* Right Column: Terminal Logs & On-Chain Transparency Ingestion Stream (5 Cols) */}
         <div className="lg:col-span-5 space-y-6">
-          {/* Monad vs Ethereum Benchmark */}
-          <div className="bg-monad-card border border-monad-border rounded-2xl p-6 shadow-xl">
-            <h3 className="font-semibold text-white mb-3 text-sm flex items-center gap-2">
-              <Cpu className="w-4 h-4 text-[#836EF9]" /> Monad 0x0100 Precompile Advantage
-            </h3>
-            <div className="space-y-3 font-mono text-xs">
-              <div className="bg-[#181622] p-3 rounded-xl border border-monad-border">
-                <div className="flex justify-between text-slate-400 mb-1">
-                  <span>Traditional EVM (Solidity P-256)</span>
-                  <span className="text-red-400 font-bold">~350,000 gas</span>
-                </div>
-                <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
-                  <div className="bg-red-500 h-full w-full"></div>
-                </div>
-                <p className="text-[10px] text-slate-500 mt-1">Costs ~$15/cert & takes 12s on Ethereum mainnet.</p>
-              </div>
-
-              <div className="bg-[#181622] p-3 rounded-xl border border-[#836EF9]/40">
-                <div className="flex justify-between text-slate-300 mb-1">
-                  <span className="text-purple-300 font-semibold">Monad (Precompile 0x0100)</span>
-                  <span className="text-emerald-400 font-bold">6,900 gas / check</span>
-                </div>
-                <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
-                  <div className="bg-[#836EF9] h-full w-[8%]"></div>
-                </div>
-                <p className="text-[10px] text-purple-300/80 mt-1">4 checks = 27,600 gas total (&lt; $0.0001) in &lt; 1s finality!</p>
-              </div>
-            </div>
-          </div>
-
           {/* Interactive Logs Panel (Tabbed: Node Logs vs On-Chain Ingestion Feed) */}
           <div className="bg-monad-card border border-monad-border rounded-2xl p-6 shadow-xl">
             <div className="flex items-center justify-between mb-3 border-b border-monad-border pb-3">
@@ -632,7 +590,7 @@ export default function App() {
 
             {/* Tab 1: Node Logs */}
             {activeLogTab === 'node' ? (
-              <div className="bg-[#0A090D] border border-monad-border rounded-xl p-3 h-80 overflow-y-auto font-mono text-[11px] text-slate-300 space-y-1.5">
+              <div className="bg-[#0A090D] border border-monad-border rounded-xl p-3 h-[440px] overflow-y-auto font-mono text-[11px] text-slate-300 space-y-1.5">
                 {logs.map((l, i) => (
                   <div
                     key={i}
@@ -652,7 +610,7 @@ export default function App() {
               </div>
             ) : (
               /* Tab 2: On-Chain Ingestion & Transparency Event Feed */
-              <div className="bg-[#0A090D] border border-monad-border rounded-xl p-3 h-80 overflow-y-auto font-mono text-[11px] text-slate-300 space-y-2.5">
+              <div className="bg-[#0A090D] border border-monad-border rounded-xl p-3 h-[440px] overflow-y-auto font-mono text-[11px] text-slate-300 space-y-2.5">
                 <div className="text-[10px] text-slate-500 pb-1 border-b border-slate-800">
                   REAL-TIME MONAD TESTNET EVENT STREAM (CONTRACT: 0xE4ec...080b)
                 </div>
